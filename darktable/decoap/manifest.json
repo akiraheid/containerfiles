@@ -1,0 +1,19 @@
+{
+	"appName": "Darktable",
+	"containerName": "darktable",
+	"detach": true,
+	"env": ["DISPLAY=unix${DISPLAY}"],
+	"mimeTypes": [
+		"image/x-canon-cr2",
+		"image/x-canon-rw",
+		"image/x-panasonic-raw",
+		"image/x-sigma-x3f",
+		"image/x-sony-arw"
+	],
+	"rm": true,
+	"volumes": [
+		"$HOME/Pictures/darktable/:/root/Pictures/:ro",
+		"/tmp/.X11-unix:/tmp/.X11-unix",
+		"/usr/share/fonts/:/usr/share/fonts:ro"
+	]
+}

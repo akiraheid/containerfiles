@@ -1,0 +1,42 @@
+{
+	"appName": "VLC",
+	"containerName": "docker.io/jess/vlc",
+	"devices": ["/dev/snd"],
+	"detach": true,
+	"ephemeral": true,
+	"env": [
+		"DISPLAY=unix${DISPLAY}",
+		"PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native"
+	],
+	"mimeTypes": [
+		"audio/flac",
+		"audio/mpeg",
+		"audio/mpegurl",
+		"audio/ogg",
+		"audio/x-mpegurl",
+		"audio/x-wav",
+		"video/3gpp",
+		"video/mpeg",
+		"video/mp4",
+		"video/ogg",
+		"video/webm",
+		"video/x-msvideo"
+	],
+	"rm": true,
+	"singleton": false,
+	"userns": "keep-id",
+	"volumes": {
+		"arg": [],
+		"config": [
+			"${HOME}/.config/vlc/:/home/vlc/.config/vlc/"
+		],
+		"optional": [
+			"${HOME}/Videos/:/home/vlc/Videos/:ro"
+		],
+		"required": [
+			"${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native:ro",
+			"/etc/machine-id:/etc/machine-id:ro",
+			"/tmp/.X11-unix:/tmp/.X11-unix"
+		]
+	}
+}

@@ -1,0 +1,23 @@
+{
+	"appName": "GIMP",
+	"containerName": "gimp",
+	"detach": true,
+	"env": ["DISPLAY=unix${DISPLAY}"],
+	"mimeTypes": [
+		"image/avif",
+		"image/bmp",
+		"image/gif",
+		"image/jpeg",
+		"image/png",
+		"image/svg+xml",
+		"image/tiff",
+		"image/vnd.microsoft.icon",
+		"image/webp"
+	],
+	"rm": true,
+	"volumes": [
+		"$HOME/Pictures/gimp/:/root/Pictures/:rw",
+		"/tmp/.X11-unix:/tmp/.X11-unix",
+		"/usr/share/fonts/:/usr/share/fonts:ro"
+	]
+}
