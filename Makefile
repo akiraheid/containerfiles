@@ -20,6 +20,6 @@ $(SUBDIRS_RELEASE):
 
 $(SUBDIRS_HTML):
 	IMAGE=$(patsubst %-html,%,$@) \
-		  && bash makeGhPage.sh $${IMAGE}
+		  && python3 makeGhPage.py $${IMAGE}
 
 .PHONY: all gh-page release $(SUBDIRS) $(SUBDIRS_RELEASE) $(SUBDIRS_PAGE)
