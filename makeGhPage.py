@@ -74,7 +74,17 @@ def trivy_to_html(data):
 def make_html(results_dir):
     """Generate the report HTML page."""
     print("Generate HTML")
-    output = "<!DOCTYPE html>\n<html>\n<head></head>\n<body>\n"
+    style = """\
+            body {
+                background-color: #000000;
+                color: #efefef;
+            }
+
+            a {
+                color: #efefef;
+            }
+    """
+    output = f"<!DOCTYPE html>\n<html>\n<head><style>{style}</style></head>\n<body>\n"
     output += "<h1>Container scan results</h1>\n"
 
     dirs = get_image_dirs()
@@ -143,7 +153,8 @@ def scan_trivy(archive_name):
 
 if __name__ == "__main__":
     image_dirs = get_image_dirs()
-    os.mkdir(scan_dir)
+    if not os.path.isdir(scan_dir):
+        os.mkdir(scan_dir)
 
     for image_dir in image_dirs:
         archive = save_image(image_dir)
