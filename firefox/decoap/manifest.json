@@ -1,0 +1,21 @@
+{
+	"appName": "Firefox",
+	"containerName": "firefox",
+	"detach": false,
+	"devices": ["/dev/snd"],
+	"env": [
+		"DISPLAY=unix${DISPLAY}",
+		"PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native"
+	],
+	"mimeTypes": [
+		"text/html"
+	],
+	"rm": true,
+	"volumes": [
+		"$HOME/.config/firefox/:/root/.mozilla/firefox",
+		"$HOME/Downloads/firefox/:/root/Downloads/",
+		"${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native:ro",
+		"/tmp/.X11-unix:/tmp/.X11-unix",
+		"/usr/share/fonts/:/usr/share/fonts:ro"
+	]
+}
