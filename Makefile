@@ -1,7 +1,7 @@
 # Convert directory findings to just the directory name
 SUBDIRS:=$(patsubst %/,%,$(wildcard */))
 SUBDIRS_RELEASE:=$(patsubst %,%-release ,$(SUBDIRS))
-dockerPrefix=docker.io/akiraheid
+SUBDIRS_SCAN:=$(patsubst %,%-scan ,$(SUBDIRS))
 
 all: clean $(SUBDIRS)
 
@@ -20,4 +20,13 @@ $(SUBDIRS_RELEASE):
 	IMAGE=$(patsubst %-release,%,$@) \
 		  && bash release.sh $${IMAGE}
 
-.PHONY: all clean html release $(SUBDIRS) $(SUBDIRS_RELEASE)
+$(SUBDIRS_SCAN):
+	mkdir -p scans
+	-rm -r scans/*.tar
+	IMAGE=$(patsubst %-scan,%,$@) \
+		&& ARCHIVE=$${IMAGE}.tar \
+		&& podman save -o scans/$${ARCHIVE} $${IMAGE} \
+		&& podman run --rm -e CI=true -v ${PWD}/scans/:/data/:ro dive:v0.10.0 --source docker-archive /data/$${IMAGE}.tar
+	-rm -r scans/*.tar
+
+.PHONY: all clean html release $(SUBDIRS) $(SUBDIRS_RELEASE) $(SUBDIRS_SCAN)
