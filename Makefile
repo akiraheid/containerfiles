@@ -2,6 +2,8 @@
 SUBDIRS:=$(patsubst %/,%,$(wildcard */))
 SUBDIRS_RELEASE:=$(patsubst %,%-release ,$(SUBDIRS))
 SUBDIRS_SCAN:=$(patsubst %,%-scan ,$(SUBDIRS))
+dive=docker.io/wagoodman/dive:v0.10.0
+grype=docker.io/anchore/grype:v0.53.1
 
 all: clean $(SUBDIRS)
 
@@ -12,6 +14,8 @@ html:
 	python3 makeGhPage.py
 
 release: $(SUBDIRS_RELEASE)
+
+scan: clean $(SUBDIRS_SCAN)
 
 $(SUBDIRS):
 	podman build -t localhost/$@ $@
@@ -26,7 +30,10 @@ $(SUBDIRS_SCAN):
 	IMAGE=$(patsubst %-scan,%,$@) \
 		&& ARCHIVE=$${IMAGE}.tar \
 		&& podman save -o scans/$${ARCHIVE} $${IMAGE} \
-		&& podman run --rm -e CI=true -v ${PWD}/scans/:/data/:ro dive:v0.10.0 --source docker-archive /data/$${IMAGE}.tar
+		&& podman run --rm -e CI=true -v ${PWD}/scans/:/data/:ro ${dive} --source docker-archive /data/$${ARCHIVE} \
+			| tee scans/$${IMAGE}-dive.txt \
+		&& podman run --rm -e GRYPE_DB_CACHE_DIR=/db -v grype-db:/db -v ${PWD}/scans/:/data/:ro ${grype} /data/$${ARCHIVE} \
+			| tee scans/$${IMAGE}-grype.txt
 	-rm -r scans/*.tar
 
 .PHONY: all clean html release $(SUBDIRS) $(SUBDIRS_RELEASE) $(SUBDIRS_SCAN)
