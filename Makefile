@@ -18,7 +18,7 @@ release: $(SUBDIRS_RELEASE)
 scan: clean $(SUBDIRS_SCAN)
 
 $(SUBDIRS):
-	podman build -t localhost/$@ $@
+	bash build.sh $@
 
 $(SUBDIRS_RELEASE):
 	IMAGE=$(patsubst %-release,%,$@) \
