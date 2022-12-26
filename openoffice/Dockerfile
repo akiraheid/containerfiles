@@ -13,4 +13,6 @@ RUN apt-get update \
 	&& cd / \
 	&& rm -r en-US
 
+COPY ./decoap/ decoap
+
 ENTRYPOINT ["/opt/openoffice4/program/soffice"]
