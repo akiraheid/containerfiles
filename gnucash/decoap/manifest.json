@@ -1,0 +1,13 @@
+{
+	"appName": "GnuCash",
+	"containerName": "gnucash",
+	"detach": true,
+	"env": ["DISPLAY=unix${DISPLAY}"],
+	"mimeTypes": [],
+	"rm": true,
+	"volumes": [
+		"$HOME/Documents/gnucash:/home/gnucash",
+		"/tmp/.X11-unix:/tmp/.X11-unix",
+		"/usr/share/fonts/:/usr/share/fonts:ro"
+	]
+}
