@@ -13,7 +13,7 @@ clean:
 html:
 	python3 makeGhPage.py
 
-release: $(SUBDIRS_RELEASE)
+release: clean $(SUBDIRS_RELEASE)
 
 scan: clean $(SUBDIRS_SCAN)
 

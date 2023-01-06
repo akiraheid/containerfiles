@@ -6,5 +6,5 @@ if [ -f "${IMAGE}/build.sh" ]; then
 	cd ${IMAGE}
 	bash build.sh
 else
-	podman build -t localhost/${IMAGE}:latest ${IMAGE}
+	podman build -t localhost/${IMAGE}:latest --no-cache ${IMAGE}
 fi
