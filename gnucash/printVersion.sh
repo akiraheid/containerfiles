@@ -1,1 +1,1 @@
-podman run --rm "$1" --version | grep "this is" | cut -d " " -f 4
+podman run --rm --entrypoint gnucash-cli "$1" --version | grep "GnuCash" | cut -d " " -f 2
