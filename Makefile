@@ -3,7 +3,7 @@ SUBDIRS:=$(patsubst %/,%,$(wildcard */))
 SUBDIRS_RELEASE:=$(patsubst %,%-release ,$(SUBDIRS))
 SUBDIRS_SCAN:=$(patsubst %,%-scan ,$(SUBDIRS))
 dive=docker.io/wagoodman/dive:v0.10.0
-grype=docker.io/anchore/grype:v0.53.1
+grype=docker.io/anchore/grype:v0.55.0
 
 all: clean $(SUBDIRS)
 
