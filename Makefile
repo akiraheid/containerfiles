@@ -5,7 +5,10 @@ SUBDIRS_SCAN:=$(patsubst %,%-scan ,$(SUBDIRS))
 dive=docker.io/wagoodman/dive:v0.10.0
 grype=docker.io/anchore/grype:v0.55.0
 
-all: clean $(SUBDIRS)
+all: clean update $(SUBDIRS)
+
+check-clean:
+	[ -d scans ] && echo "Delete scans directory" && exit 1
 
 clean:
 	-rm -r scans
@@ -15,7 +18,11 @@ html:
 
 release: clean $(SUBDIRS_RELEASE)
 
-scan: clean $(SUBDIRS_SCAN)
+scan: check-clean clean $(SUBDIRS_SCAN)
+
+update:
+	podman pull docker.io/library/alpine:3
+	podman pull docker.io/library/ubuntu:22.04
 
 $(SUBDIRS):
 	bash build.sh $@
@@ -36,4 +43,4 @@ $(SUBDIRS_SCAN):
 			| tee scans/$${IMAGE}-grype.txt
 	-rm -r scans/*.tar
 
-.PHONY: all clean html release $(SUBDIRS) $(SUBDIRS_RELEASE) $(SUBDIRS_SCAN)
+.PHONY: all check-clean clean html release update $(SUBDIRS) $(SUBDIRS_RELEASE) $(SUBDIRS_SCAN)
