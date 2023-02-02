@@ -2,6 +2,7 @@
 set -e
 
 IMAGE="$1"
+
 if [ -f "${IMAGE}/build.sh" ]; then
 	cd ${IMAGE}
 	bash build.sh

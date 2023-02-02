@@ -18,9 +18,11 @@ else
 		NAME="docker.io/akiraheid/$IMAGE:$TMP"
 		podman tag "localhost/$IMAGE" "$NAME"
 		podman push "$NAME"
+		podman rmi "$NAME"
 		TMP="$TMP."
 	done
 	NAME="docker.io/akiraheid/$IMAGE:latest"
 	podman tag "localhost/$IMAGE:latest" "$NAME"
 	podman push "$NAME"
+	podman rmi "localhost/$IMAGE"
 fi
