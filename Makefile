@@ -8,7 +8,7 @@ grype=docker.io/anchore/grype:v0.55.0
 all: clean update $(SUBDIRS)
 
 check-clean:
-	[ -d scans ] && echo "Delete scans directory" && exit 1
+	if [ -d scans ]; then echo "Delete scans directory"; exit 1; fi
 
 clean:
 	-rm -r scans
