@@ -12,10 +12,3 @@ podman build -t localhost/openoffice:latest -f Dockerfile
 echo "Create root image... done"
 
 rm $installer
-
-tools=(base calc draw impress math writer)
-for i in "${tools[@]}"; do
-	echo "Create $i..."
-	podman build -t localhost/openoffice-$i:latest -f $i.Dockerfile
-	echo "Create $i... done"
-done
