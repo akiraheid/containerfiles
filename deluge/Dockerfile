@@ -6,8 +6,8 @@ RUN apk add \
 	--no-progress \
 	adwaita-icon-theme \
 	deluge \
-	gtk+3.0 \
-	py3-setuptools
+	deluge-gtk \
+	gtk+3.0
 
 COPY ./decoap/ /decoap/
 
