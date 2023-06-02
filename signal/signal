@@ -1,0 +1,25 @@
+#!/bin/bash
+set -ex
+
+CONFIG_DIR=$HOME/.config/signal-desktop
+USERDATA_DIR=$CONFIG_DIR/userData
+
+mkdir -p "$USERDATA_DIR"
+
+IMAGE=docker.io/akiraheid/signal:latest
+
+if [ -z "$ARG" ]; then
+	ARG="--no-sandbox"
+fi
+
+##TOOL## run \
+	-d \
+	-e DISPLAY=unix${DISPLAY} \
+	--name "SignalDesktop" \
+	--rm \
+	-v "$USERDATA_DIR/":/root/.config/Signal/:rw \
+	-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+	-v /usr/share/fonts/:/usr/share/fonts:ro \
+	$IMAGE ${ARG+"$ARG"}
+
+##TOOL## pull $IMAGE
