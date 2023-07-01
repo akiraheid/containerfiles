@@ -5,32 +5,44 @@ SUBDIRS_SCAN:=$(patsubst %,%-scan ,$(SUBDIRS))
 dive=docker.io/wagoodman/dive:v0.10.0
 grype=docker.io/anchore/grype:v0.55.0
 
-all: clean update $(SUBDIRS)
+.default: all
 
+.PHONY: all
+all: clean update $(SUBDIRS) ## Make all images. Make a specific image by specifying the directory as a target
+
+.PHONY: check-clean
 check-clean:
 	if [ -d scans ]; then echo "Delete scans directory"; exit 1; fi
 
-clean:
+.PHONY: clean
+clean: ## Delete all build files
 	-rm -r scans
 
-html:
+.PHONY:html
+html: ## Make scan result html page
 	python3 makeGhPage.py
 
-release: clean $(SUBDIRS_RELEASE)
+.PHONY: release
+release: clean $(SUBDIRS_RELEASE) ## Push the images to docker.io
 
-scan: check-clean clean $(SUBDIRS_SCAN)
+.PHONY: scan
+scan: check-clean clean $(SUBDIRS_SCAN) ## Scan the images for vulnerabilites
 
-update:
+.PHONY: update
+update: ## Update base images
 	podman pull docker.io/library/alpine:3
 	podman pull docker.io/library/ubuntu:22.04
 
-$(SUBDIRS):
+.PHONY: $(SUBDIRS)
+$(SUBDIRS): ## Make a specific image
 	bash build.sh $@
 
+.PHONY: $(SUBDIRS_RELEASE)
 $(SUBDIRS_RELEASE):
 	IMAGE=$(patsubst %-release,%,$@) \
 		  && bash release.sh $${IMAGE}
 
+.PHONY: $(SUBDIRS_SCAN)
 $(SUBDIRS_SCAN):
 	mkdir -p scans
 	-rm -r scans/*.tar
@@ -43,4 +55,6 @@ $(SUBDIRS_SCAN):
 			| tee scans/$${IMAGE}-grype.txt
 	-rm -r scans/*.tar
 
-.PHONY: all check-clean clean html release update $(SUBDIRS) $(SUBDIRS_RELEASE) $(SUBDIRS_SCAN)
+.PHONY: help
+help:
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "%-30s %s\n", $$1, $$2}'
