@@ -1,0 +1,16 @@
+#!/bin/bash
+
+IMAGE=docker.io/akiraheid/darktable:latest
+
+##TOOL## run \
+	-d \
+	-e DISPLAY=unix${DISPLAY} \
+	--name darktable \
+	--network none \
+	--rm \
+	-v $HOME/Pictures/darktable/:/root/Pictures/:rw \
+	-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+	-v /usr/share/fonts/:/usr/share/fonts:ro \
+	$IMAGE
+
+##TOOL## pull $IMAGE

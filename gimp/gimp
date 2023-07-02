@@ -1,0 +1,16 @@
+#!/bin/bash
+
+IMAGE=docker.io/akiraheid/gimp:latest
+
+##TOOL## run \
+	-d \
+	-e DISPLAY=unix${DISPLAY} \
+	--name gimp \
+	--netowrk none \
+	--rm \
+	-v $HOME/Pictures/gimp/:/root/Pictures/:rw \
+	-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+	-v /usr/share/fonts/:/usr/share/fonts:ro \
+	$IMAGE
+
+##TOOL## pull $IMAGE

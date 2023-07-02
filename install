@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -e
+
+if [ $# == 0 ]; then
+	echo "No application specified to install. Exiting."
+	exit 0
+fi
+
+tools=(docker podman)
+for _tool in ${tools[@]}; do
+	toolpath=`which $_tool`
+	if [ -n "$toolpath" ]; then
+		tool=$_tool
+		break
+	fi
+done
+
+echo "Container runtime tool is $tool"
+
+if [ -z "$BIN_PATH" ]; then
+	BIN_PATH=~/.local/bin/
+fi
+
+apps=($@)
+for app in ${apps[@]}; do
+	echo "Installing $app..."
+	pushd $app > /dev/null
+	apppath=$BIN_PATH/$app
+	cp ./$app $apppath
+	sed -i "s/##TOOL##/$tool/" $apppath
+	chmod 755 $apppath
+	popd > /dev/null
+	echo "Installing $app... done"
+done

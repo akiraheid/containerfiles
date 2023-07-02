@@ -9,6 +9,4 @@ RUN apk add \
 	deluge-gtk \
 	gtk+3.0
 
-COPY ./decoap/ /decoap/
-
 ENTRYPOINT ["deluge"]

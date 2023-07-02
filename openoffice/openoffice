@@ -1,0 +1,26 @@
+#!/bin/bash
+
+ARG=""
+VOL=""
+if [ $# == 1 ]; then
+	ARG="/root/data/$(basename $1)"
+	VOL="-v $(dirname $(readlink -f $1)):/root/data"
+fi
+
+mkdir -p $HOME/Documents/openoffice/
+
+IMAGE=docker.io/akiraheid/openoffice:latest
+
+##TOOL## run \
+	--name OpenOffice-`uuidgen` \
+	-d \
+	-e DISPLAY=unix${DISPLAY} \
+	--rm \
+	-v $HOME/Documents/openoffice/:/root/Documents/:rw \
+	-v openoffice-config:/root/.openoffice/:rw \
+	-v /tmp/.X11-unix:/tmp/.X11-unix \
+	-v /usr/share/X11/xkb/:/usr/share/X11/xkb/:ro \
+	$VOL \
+	$IMAGE $ARG
+
+##TOOL## pull $IMAGE

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+IMAGE=docker.io/akiraheid/deluge:latest
+mkdir -p $HOME/Downloads/deluge
+
+podman run \
+	--name Deluge \
+	-d \
+	-e DISPLAY=unix${DISPLAY} \
+	-p 61619:58008 \
+	-p 54237-54337:42069-42169 \
+	--rm \
+	-v deluge-config:/root/.config/deluge:rw \
+	-v $HOME/Downloads/deluge/:/root/Downloads/:rw \
+	-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+	-v /usr/share/fonts/:/usr/share/fonts:ro \
+	$IMAGE
+
+##TOOL## pull $IMAGE

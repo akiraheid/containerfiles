@@ -10,6 +10,4 @@ RUN apt update \
 	&& apt-get update \
 	&& DEBIAN_FRONTEND=noninteractive apt-get install -y ubuntu-restricted-extras firefox
 
-COPY ./decoap/ /decoap/
-
 ENTRYPOINT ["firefox"]

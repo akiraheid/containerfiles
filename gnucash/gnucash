@@ -1,0 +1,22 @@
+#!/bin/bash
+
+mkdir -p $HOME/Documents/gnucash
+
+# Use 3 instead of latest because latest isn't working
+IMAGE=docker.io/akiraheid/gnucash:3
+
+podman run \
+	-d \
+	-e DISPLAY=unix${DISPLAY} \
+	-e GNC_DATA_HOME=/root/.local/share/gnucash \
+	-e GNC_CONFIG_HOME=/root/.config/gnucash \
+	--name GnuCash \
+	--rm \
+	-v gnucash-share:/root/.local/share/gnucash \
+	-v gnucash-config:/root/.config/gnucash \
+	-v $HOME/Documents/gnucash:/root/gnucash \
+	-v /tmp/.X11-unix:/tmp/.X11-unix \
+	-v /usr/share/fonts/:/usr/share/fonts:ro \
+	$IMAGE
+
+##TOOL## pull $IMAGE

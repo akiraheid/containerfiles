@@ -1,0 +1,23 @@
+#!/bin/bash
+
+mkdir -p $HOME/Downloads/firefox
+
+IMAGE=docker.io/akiraheid/firefox:latest
+
+# Use --name because we can only have one instance of firefox running anyway
+
+##TOOL## run \
+	--name firefox \
+	-d \
+	--device /dev/snd \
+	-e DISPLAY=unix${DISPLAY} \
+	-e PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native \
+	--rm \
+	-v firefox-config:/root/.mozilla/firefox/:rw \
+	-v $HOME/Downloads/firefox/:/root/Downloads/:rw \
+	-v ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native:ro \
+	-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+	-v /usr/share/fonts/:/usr/share/fonts:ro \
+	$IMAGE
+
+##TOOL## pull $IMAGE
