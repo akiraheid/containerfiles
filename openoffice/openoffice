@@ -1,26 +1,33 @@
 #!/bin/bash
 
-ARG=""
-VOL=""
+HOST_DIR=$HOME/Documents/openoffice
+CONTAINER_DIR=/root
+
 if [ $# == 1 ]; then
-	ARG="/root/data/$(basename $1)"
-	VOL="-v $(dirname $(readlink -f $1)):/root/data"
+	ARG=$CONTAINER_DIR/$(basename "$1")
+
+	fullpath=$(readlink -f "$1")
+	if [[ "$fullpath" != $HOST_DIR* ]]; then
+		ARG=/tmp/$(basename "$1")
+		MOUNT_FILE=
+	fi
 fi
 
-mkdir -p $HOME/Documents/openoffice/
+mkdir -p $HOST_DIR
 
 IMAGE=docker.io/akiraheid/openoffice:latest
 
 ##TOOL## run \
-	--name OpenOffice-`uuidgen` \
 	-d \
 	-e DISPLAY=unix${DISPLAY} \
+	--name OpenOffice-`uuidgen` \
+	--network none \
 	--rm \
-	-v $HOME/Documents/openoffice/:/root/Documents/:rw \
+	-v $HOST_DIR/:$CONTAINER_DIR/:rw \
 	-v openoffice-config:/root/.openoffice/:rw \
 	-v /tmp/.X11-unix:/tmp/.X11-unix \
 	-v /usr/share/X11/xkb/:/usr/share/X11/xkb/:ro \
-	$VOL \
-	$IMAGE $ARG
+	${MOUNT_FILE+-v "$fullpath":"$ARG":rw} \
+	$IMAGE ${ARG+"$ARG"}
 
 ##TOOL## pull $IMAGE

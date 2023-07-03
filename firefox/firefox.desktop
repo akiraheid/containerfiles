@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Firefox
+Exec=firefox %F
+Icon=default
+MimeType=application/javascript;application/json;application/mp4;application/ogg;application/pdf;application/xml;audio/aac;audio/mp4;audio/mpeg;audio/ogg;audio/vorbis;image/bmp;image/gif;image/png;image/svg+xml;image/webp;text/css;text/html;text/javascript;text/xml;video/H264;video/H265;video/mp4;video/quicktime;video/x-msvideo

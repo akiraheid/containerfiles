@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=VLC
+Exec=vlc %F
+Icon=defaulticon
+MimeType=application/mp4

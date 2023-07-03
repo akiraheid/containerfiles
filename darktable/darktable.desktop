@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Darktable
+Exec=darktable %F
+Icon=default
+MimeType=image/x-canon-cr2;image/x-canon-rw;image/x-panasonic-raw;image/x-sigma-x3f;image/x-sony-arw

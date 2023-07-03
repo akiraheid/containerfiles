@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HOST_DIR=~/Documents/keepassxc
+HOST_DIR=$HOME/Documents/keepassxc
 CONTAINER_DIR=/root/data
 
 mkdir -p $HOST_DIR

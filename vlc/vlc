@@ -1,17 +1,19 @@
 #!/bin/bash
 
-HOST_VID_DIR=$HOME/Videos
+HOST_DIR=$HOME/Videos/vlc
 CONTAINER_VID_DIR=/home/vlc/Videos
 
 if [ $# == 1 ]; then
 	ARG=$CONTAINER_VID_DIR/$(basename "$1")
 
 	fullpath=$(readlink -f "$1")
-	if [[ "$fullpath" != $HOST_VID_DIR* ]]; then
+	if [[ "$fullpath" != $HOST_DIR* ]]; then
 		ARG=/tmp/$(basename "$1")
 		MOUNT_FILE=
 	fi
 fi
+
+mkdir -p $HOST_DIR
 
 IMAGE=docker.io/akiraheid/vlc:latest
 
@@ -24,7 +26,7 @@ IMAGE=docker.io/akiraheid/vlc:latest
 	--network none \
 	--rm \
 	--userns keep-id \
-	-v $HOST_VID_DIR/:$CONTAINER_VID_DIR/:rw \
+	-v $HOST_DIR/:$CONTAINER_VID_DIR/:rw \
 	-v vlc-config:/home/vlc/.config/vlc/ \
 	-v ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native:ro \
 	-v /tmp/.X11-unix:/tmp/.X11-unix \

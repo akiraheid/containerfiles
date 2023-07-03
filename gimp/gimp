@@ -1,16 +1,32 @@
 #!/bin/bash
 
+HOST_DIR=$HOME/Pictures/gimp
+CONTAINER_DIR=/root
+
+if [ $# == 1 ]; then
+	ARG=$CONTAINER_DIR/$(basename "$1")
+
+	fullpath=$(readlink -f "$1")
+	if [[ "$fullpath" != $HOST_DIR* ]]; then
+		ARG=/tmp/$(basename "$1")
+		MOUNT_FILE=
+	fi
+fi
+
+mkdir -p $HOST_DIR
+
 IMAGE=docker.io/akiraheid/gimp:latest
 
 ##TOOL## run \
 	-d \
 	-e DISPLAY=unix${DISPLAY} \
-	--name gimp \
-	--netowrk none \
+	--name GIMP \
+	--network none \
 	--rm \
-	-v $HOME/Pictures/gimp/:/root/Pictures/:rw \
+	-v $HOST_DIR/:$CONTAINER_DIR/:rw \
 	-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
 	-v /usr/share/fonts/:/usr/share/fonts:ro \
-	$IMAGE
+	${MOUNT_FILE+-v "$fullpath":"$ARG":rw} \
+	$IMAGE ${ARG+"$ARG"}
 
 ##TOOL## pull $IMAGE

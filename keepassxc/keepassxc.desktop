@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=KeepassXC
+Exec=keepassxc %F
+Icon=defaulticon

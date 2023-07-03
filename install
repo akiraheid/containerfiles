@@ -20,6 +20,12 @@ echo "Container runtime tool is $tool"
 
 if [ -z "$BIN_PATH" ]; then
 	BIN_PATH=~/.local/bin/
+	echo "BIN_PATH not defined. Using default $BIN_PATH"
+fi
+
+if [ -z "$APP_DESKTOP_PATH" ]; then
+	APP_DESKTOP_PATH=~/.local/share/applications
+	echo "APP_DESKTOP_PATH not defined. Using default $APP_DESKTOP_PATH"
 fi
 
 apps=($@)
@@ -30,6 +36,7 @@ for app in ${apps[@]}; do
 	cp ./$app $apppath
 	sed -i "s/##TOOL##/$tool/" $apppath
 	chmod 755 $apppath
+	cp ./$app.desktop $APP_DESKTOP_PATH
 	popd > /dev/null
 	echo "Installing $app... done"
 done
