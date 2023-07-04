@@ -1,0 +1,23 @@
+#!/bin/bash
+
+HOST_DIR=$HOME/Documents/audacity
+
+mkdir -p $HOST_DIR
+
+IMAGE=docker.io/jess/audacity:latest
+
+	#-v /usr/share/fonts/:/usr/share/fonts:ro \
+##TOOL## run \
+	-d \
+	--device /dev/snd \
+	-e DISPLAY=unix${DISPLAY} \
+	-e PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native \
+	--name audacity \
+	--network none \
+	--rm \
+	-v $HOST_DIR:/root/:rw \
+	-v ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native:ro \
+	-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+	$IMAGE
+
+##TOOL## pull $IMAGE

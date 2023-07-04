@@ -4,4 +4,4 @@ Version=1.0
 Name=VLC
 Exec=vlc %F
 Icon=defaulticon
-MimeType=application/mp4
+MimeType=application/mp4;audio/3gpp;audio/aac;audio/mp4;audio/mpeg;audio/ogg;audio/opus;audio/vorbis
