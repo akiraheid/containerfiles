@@ -1,0 +1,24 @@
+#!/bin/bash
+
+DEFAULT_DIR=$HOME/Documents/calibre
+mkdir -p $DEFAULT_DIR
+
+IMAGE=localhost/calibre:latest
+#IMAGE=docker.io/akiraheid/calibre:latest
+
+CALIBRE_HOME=/home/calibre
+##TOOL## run \
+podman run \
+	-d \
+	-e CALIBRE_CONFIG_DIRECTORY="${CALIBRE_HOME}/config" \
+	-e DISPLAY=unix${DISPLAY} \
+	--name calibre \
+	--network none \
+	--rm \
+	--userns keep-id \
+	-v ${DEFAULT_DIR}/:"${CALIBRE_HOME}/Calibre Library":rw \
+	-v calibre-config:"${CALIBRE_HOME}/config/":rw \
+	-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+	$IMAGE
+
+##TOOL## pull $IMAGE
