@@ -4,7 +4,7 @@ Check out their [website](https://calibre-ebook.com/) and consider donating to [
 
 # Usage
 
-See [calibre](https://github.com/akiraheid/containerfiles/calibre/calibre).
+See [calibre](https://github.com/akiraheid/containerfiles/blob/master/calibre/calibre).
 
 # Known issues
 
