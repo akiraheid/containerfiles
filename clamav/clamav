@@ -1,0 +1,42 @@
+#!/bin/bash
+set -e
+
+HOST_DIR=$HOME/Documents/clamav
+
+mkdir -p $HOST_DIR
+
+CONTAINER_DIR=/home/clamav/clamav
+
+if [ $# == 1 ]; then
+	ARG=$CONTAINER_DIR/$(basename "$1")
+
+	fullpath=$(readlink -f "$1")
+	if [[ "$fullpath" != $HOST_DIR* ]]; then
+		ARG=/tmp/$(basename "$1")
+		MOUNT_FILE=
+	fi
+fi
+
+mkdir -p $HOST_DIR
+
+IMAGE=docker.io/akiraheid/clamav:latest
+
+# Update database
+podman run \
+	--name clamav-db-update \
+	-p 3310:3310 \
+	--rm \
+	-v clamav-db:/var/lib/clamav/:rw \
+	$IMAGE freshclam
+
+# Run scan without network access to stay private
+##TOOL## run \
+	--name clamav \
+	--network none \
+	--rm \
+	-v $HOST_DIR/:${CONTAINER_DIR}/:rw \
+	${MOUNT_FILE+-v "$fullpath":"$ARG":rw} \
+	-v clamav-db:/var/lib/clamav/:rw \
+	$IMAGE clamscan ${ARG+"$ARG"}
+
+##TOOL## pull $IMAGE
