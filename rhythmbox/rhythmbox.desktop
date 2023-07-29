@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Rhythmbox
+TryExec=rhythmbox
+Exec=rhythmbox %F
+Icon=rhythmbox
+MimeType=application/mp4;audio/3gpp;audio/aac;audio/mp4;audio/mpeg;audio/ogg;audio/opus;audio/vorbis

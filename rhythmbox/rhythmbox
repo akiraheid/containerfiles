@@ -1,0 +1,36 @@
+#!/bin/bash
+
+HOST_DIR=$HOME/Music/rhythmbox
+CONTAINER_ROOT_DIR=/root
+CONTAINER_MUSIC_DIR=${CONTAINER_ROOT_DIR}/Music
+
+if [ $# == 1 ]; then
+	ARG=$CONTAINER_MUSIC_DIR/$(basename "$1")
+
+	fullpath=$(readlink -f "$1")
+	if [[ "$fullpath" != $HOST_DIR* ]]; then
+		ARG=/tmp/$(basename "$1")
+		MOUNT_FILE=
+	fi
+fi
+
+mkdir -p $HOST_DIR
+
+IMAGE=docker.io/akiraheid/rhythmbox:latest
+
+##TOOL## run \
+	-d \
+	--device /dev/snd \
+	-e DISPLAY=unix${DISPLAY} \
+	-e PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native \
+	--name rhythmbox-$(uuidgen) \
+	--rm \
+	-v $HOST_DIR/:$CONTAINER_MUSIC_DIR/:rw \
+	-v ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native:ro \
+	-v rhythmbox-config:${CONTAINER_ROOT_DIR}/.config/rhythmbox:rw \
+	-v rhythmbox-data:${CONTAINER_ROOT_DIR}/.local/share/rhythmbox:rw \
+	-v /tmp/.X11-unix:/tmp/.X11-unix \
+	${MOUNT_FILE+-v "$fullpath":"$ARG":rw} \
+	$IMAGE ${ARG+"$ARG"}
+
+##TOOL## pull $IMAGE
