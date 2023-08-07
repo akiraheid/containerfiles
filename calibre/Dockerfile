@@ -1,5 +1,5 @@
 FROM docker.io/library/alpine:3 AS downloader
-RUN wget -O /app.txz https://github.com/kovidgoyal/calibre/releases/download/v6.23.0/calibre-6.23.0-x86_64.txz
+RUN wget --no-verbose -O /app.txz https://github.com/kovidgoyal/calibre/releases/download/v6.24.0/calibre-6.24.0-x86_64.txz
 
 FROM docker.io/library/ubuntu:22.04
 LABEL maintainer "akiraheid <https://github.com/akiraheid/containerfiles>"
