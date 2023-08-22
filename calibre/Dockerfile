@@ -1,12 +1,13 @@
 FROM docker.io/library/alpine:3 AS downloader
-RUN wget --no-verbose -O /app.txz https://github.com/kovidgoyal/calibre/releases/download/v6.24.0/calibre-6.24.0-x86_64.txz
+RUN wget --no-verbose -O /app.txz https://github.com/kovidgoyal/calibre/releases/download/v6.25.0/calibre-6.25.0-x86_64.txz \
+	&& mkdir app \
+	&& cd app \
+	&& tar -xf ../app.txz
 
 FROM docker.io/library/ubuntu:22.04
 LABEL maintainer "akiraheid <https://github.com/akiraheid/containerfiles>"
 
-WORKDIR app
-
-COPY --from=downloader /app.txz app.txz
+COPY --from=downloader /app /app
 RUN apt-get update && apt-get install -y --no-install-recommends fontconfig \
 		fcitx-rime fonts-wqy-microhei libnss3 libopengl0 libqpdf28 \
 		libxkbcommon-x11-0 libxkbfile1 libxcb-icccm4 libxcb-image0 \
@@ -14,8 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends fontconfig \
 		libxcomposite1 libxdamage1 libxrandr2 poppler-utils python3 python3-xdg \
 		ttf-wqy-zenhei xz-utils \
 	&& apt-get install -y speech-dispatcher \
-	&& tar -xf app.txz && rm app.txz \
-	&& apt-get clean && rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/*
+	&& apt-get clean \
+	&& rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/*
 
 ENV HOME=/home/calibre
 RUN useradd --create-home --home-dir $HOME calibre \
