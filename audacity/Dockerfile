@@ -1,6 +1,6 @@
 FROM alpine:3
 LABEL maintainer "akiraheid <https://github.com/akiraheid/containerfiles>"
 
-RUN apk add --no-cache --no-progress darktable
+RUN apk add --no-cache --no-progress audacity
 
-ENTRYPOINT ["darktable"]
+ENTRYPOINT ["audacity"]
