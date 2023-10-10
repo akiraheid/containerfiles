@@ -3,12 +3,10 @@
 DEFAULT_DIR=$HOME/Documents/calibre
 mkdir -p $DEFAULT_DIR
 
-IMAGE=localhost/calibre:latest
-#IMAGE=docker.io/akiraheid/calibre:latest
+IMAGE=docker.io/akiraheid/calibre:latest
 
 CALIBRE_HOME=/home/calibre
 ##TOOL## run \
-podman run \
 	-d \
 	-e CALIBRE_CONFIG_DIRECTORY="${CALIBRE_HOME}/config" \
 	-e DISPLAY=unix${DISPLAY} \
