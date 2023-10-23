@@ -1,5 +1,5 @@
 FROM docker.io/library/alpine:3 AS downloader
-RUN wget --no-verbose -O /app.txz https://github.com/kovidgoyal/calibre/releases/download/v6.28.1/calibre-6.28.1-x86_64.txz \
+RUN wget --no-verbose -O /app.txz https://github.com/kovidgoyal/calibre/releases/download/v6.29.0/calibre-6.29.0-x86_64.txz \
 	&& mkdir app \
 	&& cd app \
 	&& tar -xf ../app.txz
