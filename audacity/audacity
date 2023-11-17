@@ -4,7 +4,7 @@ HOST_DIR=$HOME/Documents/audacity
 
 mkdir -p $HOST_DIR
 
-IMAGE=docker.io/jess/audacity:latest
+IMAGE=docker.io/akiraheid/audacity:latest
 
 	#-v /usr/share/fonts/:/usr/share/fonts:ro \
 ##TOOL## run \
