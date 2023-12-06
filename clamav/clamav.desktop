@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=ClamAV
+Exec=gnome-terminal -- clamav %F
+Icon=default
