@@ -1,1 +1,1 @@
-podman run --rm "$1" --version | grep "this is" | cut -d " " -f 4
+podman run --rm --entrypoint /usr/bin/apt-cache "$1" showpkg audacity | grep "(/var/lib/dpkg/status)" | cut -d "+" -f 1
