@@ -1,5 +1,6 @@
 FROM docker.io/library/alpine:3 AS downloader
-RUN wget --no-verbose -O /app.txz https://github.com/kovidgoyal/calibre/releases/download/v7.1.0/calibre-7.1.0-x86_64.txz \
+RUN version=7.2.0 \
+	&& wget --no-verbose -O /app.txz https://github.com/kovidgoyal/calibre/releases/download/v${version}/calibre-${version}-x86_64.txz \
 	&& mkdir app \
 	&& cd app \
 	&& tar -xf ../app.txz
