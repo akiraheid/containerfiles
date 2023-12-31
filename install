@@ -36,7 +36,11 @@ for app in ${apps[@]}; do
 	cp ./$app $apppath
 	sed -i "s/##TOOL##/$tool/" $apppath
 	chmod 755 $apppath
-	cp ./$app.desktop $APP_DESKTOP_PATH
-	popd > /dev/null
-	echo "Installing $app... done"
+
+	desktop=./$app.desktop
+	if [ -f "$desktop" ]; then
+		cp "$desktop" "$APP_DESKTOP_PATH"
+		popd > /dev/null
+		echo "Installing $app... done"
+	fi
 done
