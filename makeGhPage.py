@@ -8,6 +8,8 @@ import subprocess
 root_dir = os.getcwd()
 scan_dir = "scans"
 html_name = "index.html"
+trivy_version = "0.34.0"
+clamav_version = "0.105"
 
 def clamav_to_html(data):
     """Convert ClamAV text to HTML."""
@@ -50,22 +52,28 @@ def trivy_to_html(data):
     """Convert Trivy SARIF data to HTML."""
     ret = "<h3>Trivy</h3>\n"
 
-    run = data["runs"][0]
-    results = run["results"]
+    findings = data["runs"][0]["tool"]["driver"]["rules"]
 
-    if not results:
-        ret += "<p>No findings</p>\n"
-        return ret
+    if not findings:
+        return ret + "<p>No findings</p>\n"
+
+    results = []
+    for finding in findings:
+        severity = finding["properties"]["security-severity"]
+        _id = finding["id"]
+        url = finding["helpUri"]
+        level = finding["properties"]["tags"][2]
+        description = finding["fullDescription"]["text"]
+        results += [(severity, _id, url, level, description)]
+
+    results.sort(reverse=True)
 
     ret += "<table>\n"
     ret += "<tr>\n<th>ID</th><th>Severity</th><th>Description</th></tr>\n"
 
     # Table format is | ID | Severity | Description |
-    for result in results:
-        _id = result['ruleId']
-        level = result['level']
-        message = result['message']['text']
-        ret += f"<tr><td>{_id}</td><td>{level}</td><td>{message}</td></tr>\n"
+    for _, _id, url, level, description in results:
+        ret += f'<tr><td><a href="{url}">{_id}</a></td><td>{level}</td><td>{description}</td></tr>\n'
 
     ret += "</table>\n"
 
@@ -83,6 +91,11 @@ def make_html(results_dir):
             a {
                 color: #efefef;
             }
+
+            td {
+                margin: 1em;
+                padding: 1em;
+            }
     """
     output = f"<!DOCTYPE html>\n<html>\n<head><style>{style}</style></head>\n<body>\n"
     output += "<h1>Container scan results</h1>\n"
@@ -91,16 +104,14 @@ def make_html(results_dir):
 
     # Create table of contents
     output += "<ul>\n"
-    for x in range(len(dirs)):
-        image = dirs[x]
+    for image in dirs:
         output += f'<li><a href="#{image}">{image}</a></li>\n'
 
     output += "</ul>\n"
 
     # Create section for each image
     dirs = list(dirs)
-    for x in range(len(dirs)):
-        image = dirs[x]
+    for image in dirs:
         output += f'<h2 id="{image}">{image}</h2>\n'
 
         data = None
@@ -132,7 +143,7 @@ def scan_clamav(archive_name):
     command = ["podman", "run", "--pull", "always", "--rm", "-v", f"{cache}:/var/lib/clamav/:rw",
             "-v", f"{root_dir}/{scan_dir}/:/root/{scan_dir}/:rw",
             "-w", f"/root/{scan_dir}",
-            "docker.io/clamav/clamav:0.105", "clamscan", archive_name]
+            f"docker.io/clamav/clamav:{clamav_version}", "clamscan", archive_name]
 
     proc = subprocess.run(command, capture_output=True)
     out = proc.stdout.decode("utf-8")
@@ -146,7 +157,7 @@ def scan_trivy(archive_name):
     command = ["podman", "run", "--rm", "-v", f"{cache}:/root/.cache/:rw",
             "-v", f"{root_dir}/{scan_dir}/:/root/{scan_dir}/:rw",
             "-w", "/root",
-            "docker.io/aquasec/trivy:0.34.0", "image", "--format", "sarif",
+            f"docker.io/aquasec/trivy:{trivy_version}", "image", "--format", "sarif",
                 "-o", f"{image}-trivy.json", "--input", archive_name]
 
     subprocess.run(command)
