@@ -35,7 +35,7 @@ for app in ${apps[@]}; do
 	apppath=$BIN_PATH/$app
 	cp ./$app $apppath
 	sed -i "s/##TOOL##/$tool/" $apppath
-	chmod 755 $apppath
+	chmod 750 $apppath
 
 	desktop=./$app.desktop
 	if [ -f "$desktop" ]; then

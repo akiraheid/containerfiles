@@ -1,32 +1,29 @@
 #!/bin/bash
 
-HOST_DIR=$HOME/Documents/keepassxc
-CONTAINER_DIR=/root/data
+_app=keepassxc
+_host_datadir=${KEEPASSXC_DATA_DIR:-$HOME/Documents/$_app}
+_container_datadir=$HOME
 
-mkdir -p $HOST_DIR
+image=docker.io/akiraheid/keepassxc:latest
 
-if [ $# == 1 ]; then
-	ARG=$CONTAINER_DIR/$(basename "$1")
-	fullpath=$(readlink -f "$1")
-	if [[ "$fullpath" != $HOST_DIR* ]]; then
-		ARG=/tmp/$(basename "$1")
-		MOUNT_FILE=
+mkdir -pv "$_host_datadir"
+
+# Arguments for x11docker
+opts="--desktop --backend=##TOOL## --clipboard=oneway"
+
+# Arguments to pass through x11docker to run command
+xdargs="-- --volume ${_host_datadir}:${_container_datadir}:rw"
+
+# Mount user-specified file, if given
+_file=${1:-}
+if [ -n "${_file}" ]; then
+	if [ -f "${_file}" ]; then
+		_file=`readlink -f "${_file}"`
+		_base=`basename ${_file}`
+		xdargs="$xdargs --volume ${_file}:/${_base}:rw"
 	fi
 fi
 
-IMAGE=docker.io/akiraheid/keepassxc:latest
-
-##TOOL## run \
-	-d \
-	-e DISPLAY=unix${DISPLAY} \
-	--name keepassxc-$(uuidgen) \
-	--network none \
-	--rm \
-	-v keepassxc-config:/root/.config/keepassxc/:rw \
-	-v $HOST_DIR/:$CONTAINER_DIR/:rw \
-	-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
-	-v /usr/share/X11/xkb/:/usr/share/X11/xkb/:ro \
-	${MOUNT_FILE+-v "$fullpath":"$ARG":rw} \
-	$IMAGE ${ARG+"${ARG}"}
+x11docker $opts $xdargs -- $image $args >/dev/null 2>&1 &
 
 ##TOOL## pull $IMAGE
