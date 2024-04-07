@@ -26,4 +26,4 @@ fi
 
 x11docker $opts $xdargs -- $image $args >/dev/null 2>&1 &
 
-##TOOL## pull $IMAGE
+##TOOL## pull $image
