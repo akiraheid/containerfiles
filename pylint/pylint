@@ -47,51 +47,6 @@ for token in "${@}"; do
 	fi
 done
 
-cdatadir=/root/
-
-# Arguments for the run command
-hargs=("--name" "pylint-$(uuidgen)" "--network" "none" "--rm")
-
-# Arguments for the container entrypoint
-cargs=()
-
-# pylint search order specified in the documentation
-# https://pylint.readthedocs.io/en/v3.1.0/user_guide/usage/run.html#command-line-options
-# Ignoring paths that search parent paths.
-pylintrcPaths=(./pylintrc ./pylintrc.toml ./.pylintrc ./.pylintrc.toml)
-pylintrcPaths+=(./pyproject.toml ./setup.cfg ./tox.ini "${PYLINTRC:-/fakefile}")
-pylintrcPaths+=("$HOME/.pylintrc" "$HOME/.config/pylintrc" "/etc/pylintrc")
-
-echo "Finding pylint configuration..."
-cpath=/etc/pylintrc
-for i in "${pylintrcPaths[@]}"; do
-	abspath=`readlink -f "$i"`
-	if [ -f "$abspath" ]; then
-		hargs+=("--volume" "${abspath}:${cpath}:ro")
-		break
-	fi
-done
-
-for token in "${@}"; do
-	abspath=`readlink -f "${token}"`
-	cpath=${cdatadir}/${token}
-
-	if [ -f "$token" ]; then
-		hpath=`readlink -f "${token}"`
-		hargs+=("--volume")
-		hargs+=("${hpath}:${cpath}:rw")
-		cargs+=("${cpath}")
-	elif [ -d "$token" ]; then
-		hpath=`readlink -f "${token}"`
-		hargs+=("--volume")
-		hargs+=("${hpath}/:${cpath}/:rw")
-		cargs+=("${cpath}")
-	else
-		cargs+=("${token}")
-	fi
-done
-
-set -x
 ##TOOL## run "${hargs[@]}" $image "${cargs[@]}"
 
 ##TOOL## pull $image
