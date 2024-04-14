@@ -1,0 +1,39 @@
+#!/bin/bash
+image=docker.io/aquasec/trivy:latest
+
+happdir=$HOME/Documents/trivy
+hcachedir=${happdir}/cache
+hdatadir=${happdir}/data
+
+ccachedir=/root/.cache
+cdatadir=/root/data
+
+mkdir -p "$hcachedir" "$hdatadir"
+
+hargs=("--volume" "${hcachedir}/:${ccachedir}/:rw")
+cargs=()
+for token in "${@}"; do
+	cpath=${cdatadir}/${token}
+
+	if [ -f "$token" ]; then
+		hpath=`readlink -f "${token}"`
+		hargs+=("--volume")
+		hargs+=("${hpath}:${cpath}:ro")
+		cargs+=("${cpath}")
+	elif [ -d "$token" ]; then
+		hpath=`readlink -f "${token}"`
+		hargs+=("--volume")
+		hargs+=("${hpath}/:${cpath}/:ro")
+		cargs+=("${cpath}")
+	else
+		cargs+=("${token}")
+	fi
+done
+
+##TOOL## run \
+	--name "trivy-$(uuidgen)" \
+	--rm \
+	"${hargs[@]}" \
+	$image "${cargs[@]}"
+
+##TOOL## pull $image

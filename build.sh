@@ -1,17 +1,22 @@
 #!/bin/bash
 set -e
 
-IMAGE=$1
-desktop=$IMAGE.desktop
+app=$1
 
-if [ -f "$desktop" ] && ! grep "/tmp/.X11-unix" $desktop ; then
-	echo "ERR $desktop specifies a graphical display but there is no .desktop file."
+cd "$app"
+if [ ! -f "Dockerfile" ]; then
+	echo "No Dockerfile. Nothing to build."
+	exit 0
+fi
+
+desktop=$app.desktop
+if [ ! -f "$desktop" ] && grep "x11docker" "$app" ; then
+	echo "ERR $app specifies a graphical display but there is no .desktop file."
 	exit 1
 fi
 
-if [ -f "${IMAGE}/build.sh" ]; then
-	cd "${IMAGE}"
-	bash build.sh
+if [ -f "./build.sh" ]; then
+	./build.sh
 else
-	podman build -t localhost/"${IMAGE}":latest --no-cache "${IMAGE}"
+	podman build -t "localhost/${app}:latest" --no-cache .
 fi
