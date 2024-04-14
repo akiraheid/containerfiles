@@ -1,42 +1,52 @@
 #!/bin/bash
-set -e
 
-HOST_DIR=$HOME/Documents/clamav
+image=docker.io/akiraheid/clamav:latest
 
-mkdir -p $HOST_DIR
+hdatadir=$HOME/Documents/clamav/data
+hdbdir=$HOME/Documents/clamav/db
 
-CONTAINER_DIR=/home/clamav/clamav
+cdatadir=/home/clamav/clamav
+cdbdir=/var/lib/clamav
 
-if [ $# == 1 ]; then
-	ARG=$CONTAINER_DIR/$(basename "$1")
+mkdir -p "$hdatadir" "$hdbdir"
 
-	fullpath=$(readlink -f "$1")
-	if [[ "$fullpath" != $HOST_DIR* ]]; then
-		ARG=/tmp/$(basename "$1")
-		MOUNT_FILE=
+hargs=("--name" "clamav-`uuidgen`" "--network" "none" "--rm")
+hargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
+hargs+=("--volume" "${hdbdir}/:${cdbdir}/:rw")
+cargs=()
+
+for token in "${@}"; do
+
+	if [ -f "$token" ]; then
+		hpath=`readlink -f "${token}"`
+
+		# Remove leading slash
+		noleading=`echo "${hpath}" | cut -c2-`
+		cpath=${cdatadir}/${noleading}
+
+		hargs+=("--volume" "${hpath}:${cpath}:ro")
+		cargs+=("${cpath}")
+	elif [ -d "$token" ]; then
+		hpath=`readlink -f "${token}"`
+
+		# Remove leading slash
+		noleading=`echo "${hpath}" | cut -c2-`
+		cpath=${cdatadir}/${noleading}
+
+		hargs+=("--volume" "${hpath}/:${cpath}/:ro")
+		cargs+=("${cpath}")
+	else
+		cargs+=("${token}")
 	fi
-fi
+done
 
-mkdir -p $HOST_DIR
-
-IMAGE=docker.io/akiraheid/clamav:latest
-
-# Update database
-podman run \
-	--name clamav-db-update \
-	-p 3310:3310 \
-	--rm \
-	-v clamav-db:/var/lib/clamav/:rw \
-	$IMAGE freshclam
+echo "Updating database..."
+dbargs=("--name" "clamav-db-update" "--rm")
+dbargs+=("--volume" "${hdbdir}/:${cdbdir}/:rw")
+##TOOL## run "${dbargs[@]}" $image freshclam
 
 # Run scan without network access to stay private
-##TOOL## run \
-	--name clamav \
-	--network none \
-	--rm \
-	-v $HOST_DIR/:${CONTAINER_DIR}/:rw \
-	${MOUNT_FILE+-v "$fullpath":"$ARG":rw} \
-	-v clamav-db:/var/lib/clamav/:rw \
-	$IMAGE clamscan ${ARG+"$ARG"}
+echo "Scanning..."
+##TOOL## run "${hargs[@]}" $image clamscan "${cargs[@]}"
 
-##TOOL## pull $IMAGE
+##TOOL## pull $image
