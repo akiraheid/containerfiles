@@ -1,0 +1,43 @@
+#!/bin/bash
+
+app=shellcheck
+
+image=docker.io/akiraheid/${app}:latest
+
+hdatadir=$HOME/Documents/${app}/
+
+cdatadir=/app
+
+mkdir -p "$hdatadir"
+
+hargs=("--name" "${app}-$(uuidgen)" "--network" "none" "--rm")
+hargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
+cargs=()
+
+for token in "${@}"; do
+	if [ -f "$token" ]; then
+		hpath=$(readlink -f "${token}")
+
+		# Remove leading slash
+		noleading=$(echo "${hpath}" | cut -c2-)
+		cpath=${cdatadir}/${noleading}
+
+		hargs+=("--volume" "${hpath}:${cpath}:ro")
+		cargs+=("${cpath}")
+	elif [ -d "$token" ]; then
+		hpath=$(readlink -f "${token}")
+
+		# Remove leading slash
+		noleading=$(echo "${hpath}" | cut -c2-)
+		cpath=${cdatadir}/${noleading}
+
+		hargs+=("--volume" "${hpath}/:${cpath}/:ro")
+		cargs+=("${cpath}")
+	else
+		cargs+=("${token}")
+	fi
+done
+
+##TOOL## run "${hargs[@]}" $image "${cargs[@]}"
+
+##TOOL## pull $image
