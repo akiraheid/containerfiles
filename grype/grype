@@ -1,0 +1,47 @@
+#!/bin/bash
+app=grype
+image=docker.io/anchore/${app}:latest
+
+happdir=$HOME/Documents/${app}
+hcachedir=${happdir}/cache
+hdatadir=${happdir}/data
+
+ccachedir=/app/cache
+cdatadir=/app/data
+
+mkdir -p "$hcachedir" "$hdatadir"
+
+hargs=("-e" "GRYPE_DB_CACHE_DIR=${ccachedir}")
+hargs+=("--volume" "${hcachedir}/:${ccachedir}/:rw")
+hargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
+hargs+=("--name" "${app}-$(uuidgen)" "--rm")
+
+cargs=()
+
+for token in "${@}"; do
+	if [ -f "$token" ]; then
+		hpath=$(readlink -f "${token}")
+
+		# Remove leading slash
+		noleading=$(echo "${hpath}" | cut -c2-)
+		cpath=${cdatadir}/${noleading}
+
+		hargs+=("--volume" "${hpath}:${cpath}:ro")
+		cargs+=("${cpath}")
+	elif [ -d "$token" ]; then
+		hpath=$(readlink -f "${token}")
+
+		# Remove leading slash
+		noleading=$(echo "${hpath}" | cut -c2-)
+		cpath=${cdatadir}/${noleading}
+
+		hargs+=("--volume" "${hpath}/:${cpath}/:ro")
+		cargs+=("${cpath}")
+	else
+		cargs+=("${token}")
+	fi
+done
+
+##TOOL## run "${hargs[@]}" "${image}" "${cargs[@]}"
+
+##TOOL## pull "${image}"
