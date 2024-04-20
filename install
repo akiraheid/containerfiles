@@ -8,8 +8,8 @@ if [ $# == 0 ]; then
 fi
 
 tools=(docker podman)
-for _tool in ${tools[@]}; do
-	toolpath=`which $_tool`
+for _tool in "${tools[@]}"; do
+	toolpath=$(which "$_tool")
 	if [ -n "$toolpath" ]; then
 		tool=$_tool
 		break
@@ -28,25 +28,25 @@ if [ -z "$APP_DESKTOP_PATH" ]; then
 	echo "APP_DESKTOP_PATH not defined. Using default $APP_DESKTOP_PATH"
 fi
 
-if [ -z "`which xclip`" ]; then
+if [ -z "$(which xclip)" ]; then
 	echo "xclip is required for one- and two-way clipboard functionality."
 	echo "You don't have to install it, but you won't be able to copy/paste into"
 	echo "and out of applications."
 	sudo apt install xclip
 fi
 
-apps=($@)
-for app in ${apps[@]}; do
+apps=("$@")
+for app in "${apps[@]}"; do
 	# Remove possible trailing forward slash from autocomplete
-	app=`basename $app`
+	app=$(basename "$app")
 
 	echo "Installing $app..."
-	pushd $app > /dev/null
+	pushd "$app" > /dev/null
 
 	apppath=$BIN_PATH/$app
-	cp -v ./$app $apppath
-	sed -i "s/##TOOL##/$tool/" $apppath
-	chmod 750 $apppath
+	cp -v "./$app" "$apppath"
+	sed -i "s/##TOOL##/$tool/" "$apppath"
+	chmod 750 "$apppath"
 
 	desktop=./$app.desktop
 	if [ -f "$desktop" ]; then

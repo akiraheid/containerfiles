@@ -4,7 +4,7 @@ app=shellcheck
 
 image=docker.io/akiraheid/${app}:latest
 
-hdatadir=$HOME/Documents/${app}/
+hdatadir=$HOME/Documents/${app}
 
 cdatadir=/app
 

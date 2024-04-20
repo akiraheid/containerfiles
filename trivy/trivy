@@ -11,29 +11,26 @@ cdatadir=/root/data
 mkdir -p "$hcachedir" "$hdatadir"
 
 hargs=("--volume" "${hcachedir}/:${ccachedir}/:rw")
+hargs+=("--name" "trivy-$(uuidgen)" "--rm")
+
 cargs=()
+
 for token in "${@}"; do
 	cpath=${cdatadir}/${token}
 
 	if [ -f "$token" ]; then
-		hpath=`readlink -f "${token}"`
-		hargs+=("--volume")
-		hargs+=("${hpath}:${cpath}:ro")
+		hpath=$(readlink -f "${token}")
+		hargs+=("--volume" "${hpath}:${cpath}:ro")
 		cargs+=("${cpath}")
 	elif [ -d "$token" ]; then
-		hpath=`readlink -f "${token}"`
-		hargs+=("--volume")
-		hargs+=("${hpath}/:${cpath}/:ro")
+		hpath=$(readlink -f "${token}")
+		hargs+=("--volume" "${hpath}/:${cpath}/:ro")
 		cargs+=("${cpath}")
 	else
 		cargs+=("${token}")
 	fi
 done
 
-##TOOL## run \
-	--name "trivy-$(uuidgen)" \
-	--rm \
-	"${hargs[@]}" \
-	$image "${cargs[@]}"
+##TOOL## run "${hargs[@]}" "${image}" "${cargs[@]}"
 
-##TOOL## pull $image
+##TOOL## pull "${image}"

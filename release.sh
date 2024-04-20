@@ -1,19 +1,17 @@
 #!/bin/bash
 set -ex
 
-IMAGE="$1"
-VERSION=`bash printVersion.sh ${IMAGE}`
+IMAGE=$1
+VERSION=$(bash printVersion.sh "${IMAGE}")
 
-if [ -f ${IMAGE}/release.sh ]; then
-	cd ${IMAGE}
-	bash release.sh ${IMAGE} ${VERSION}
+if [ -f "${IMAGE}/release.sh" ]; then
+	cd "${IMAGE}"
+	bash release.sh "${IMAGE}" "${VERSION}"
 else
-	VERSION=`echo ${VERSION} | sed 's/\./ /g'`
-	VERSION=($VERSION)
-	echo $VERSION
+	VERSION=(${VERSION//./ })
 
 	TMP=
-	for ver in ${VERSION[@]}; do
+	for ver in "${VERSION[@]}"; do
 		TMP="$TMP$ver"
 		NAME="docker.io/akiraheid/$IMAGE:$TMP"
 		podman tag "localhost/$IMAGE" "$NAME"
