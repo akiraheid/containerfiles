@@ -7,6 +7,7 @@ RUN apk add \
 	adwaita-icon-theme \
 	deluge \
 	deluge-gtk \
-	gtk+3.0
+	gtk+3.0 \
+	ttf-freefont
 
 ENTRYPOINT ["deluge"]

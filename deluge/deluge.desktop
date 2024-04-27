@@ -1,7 +1,17 @@
 [Desktop Entry]
-Type=Application
 Version=1.0
 Name=Deluge
-Exec=deluge %F
-Icon=default
-MimeType=application/x-bittorrent
+GenericName=BitTorrent Client
+X-GNOME-FullName=Deluge BitTorrent Client
+Comment=Download and share files over BitTorrent
+Keywords=bittorrent;torrent;magnet;download;p2p;torrents;downloading;uploading;share;sharing;
+TryExec=deluge
+Exec=deluge %U
+Icon=deluge
+Terminal=false
+Type=Application
+Categories=Network;FileTransfer;P2P;GTK;
+StartupWMClass=deluge
+StartupNotify=true
+MimeType=application/x-bittorrent;x-scheme-handler/magnet;
+X-GNOME-UsesNotifications=true

@@ -1,19 +1,48 @@
 #!/bin/bash
+app=deluge
+image=docker.io/akiraheid/${app}:latest
 
-IMAGE=docker.io/akiraheid/deluge:latest
-mkdir -p $HOME/Downloads/deluge
+happdir=$HOME/Downloads/${app}
+hconfigdir=${DELUGE_CONFIG_DIR:-$happdir}/config
+hdatadir=${DELUGE_DATA_DIR:-$happdir}/data
 
-podman run \
-	--name Deluge \
-	-d \
-	-e DISPLAY=unix${DISPLAY} \
-	-p 61619:58008 \
-	-p 54237-54337:42069-42169 \
-	--rm \
-	-v deluge-config:/root/.config/deluge:rw \
-	-v $HOME/Downloads/deluge/:/root/Downloads/:rw \
-	-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
-	-v /usr/share/fonts/:/usr/share/fonts:ro \
-	$IMAGE
+cconfigdir=/root/.config/deluge
+cdatadir=/root/Downloads
 
-##TOOL## pull $IMAGE
+mkdir -p "$hconfigdir" "$hdatadir"
+
+# Arguments for x11docker
+opts="--desktop --backend=##TOOL## --clipboard=superv --network"
+
+# Arguments to pass through x11docker to run command
+xdargs=("--" "--rm" "-p" "61619:58008" "-p" "54237-54337:42069-42169")
+xdargs+=("--name" "${app}-$(uuidgen)")
+xdargs+=("--volume" "${hconfigdir}/:${cconfigdir}/:rw")
+xdargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
+
+# Arguments for the application
+cargs=()
+
+for token in "${@}"; do
+	if [ -f "$token" ]; then
+		hpath=$(readlink -f "${token}")
+		# Remove leading slash
+		noleading=$(echo "${hpath}" | cut -c2-)
+		cpath=${cdatadir}/${noleading}
+		hargs+=("--volume" "${hpath}:${cpath}:ro")
+		cargs+=("${cpath}")
+	elif [ -d "$token" ]; then
+		hpath=$(readlink -f "${token}")
+		# Remove leading slash
+		noleading=$(echo "${hpath}" | cut -c2-)
+		cpath=${cdatadir}/${noleading}
+		hargs+=("--volume" "${hpath}/:${cpath}/:ro")
+		cargs+=("${cpath}")
+	else
+		cargs+=("${token}")
+	fi
+done
+
+x11docker $opts $xdargs -- $image $cargs >/dev/null 2>&1 &
+
+##TOOL## pull $image
