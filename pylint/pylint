@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# image is used in a line that is parsed as a comment becaue of leading '##' in
+# '##TOOL##'. When this file is installed on a system, the '##TOOL##' is
+# replaced with the system's container execution tool.
+# shellcheck disable=SC2034
 image=docker.io/akiraheid/pylint:latest
 
 cdatadir=/root
