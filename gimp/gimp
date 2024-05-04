@@ -1,32 +1,50 @@
 #!/bin/bash
 
-HOST_DIR=$HOME/Pictures/gimp
-CONTAINER_DIR=/root
+backend=${CONTAINER_BACKEND:-podman}
 
-if [ $# == 1 ]; then
-	ARG=$CONTAINER_DIR/$(basename "$1")
+app=gimp
+image=docker.io/akiraheid/${app}:latest
 
-	fullpath=$(readlink -f "$1")
-	if [[ "$fullpath" != $HOST_DIR* ]]; then
-		ARG=/tmp/$(basename "$1")
-		MOUNT_FILE=
+hcachedir=${XDG_CACHE_HOME:-$HOME/.cache/${app}}
+hconfigdir=${XDG_CONFIG_HOME:-$HOME/.config/${app}}
+hdatadir=${GIMP_DATA_DIR:-$HOME/Documents/$app}
+hlocalsharedir=${XDG_DATA_HOME:-$HOME/.local/share/$app}
+
+# Use the fake $HOME in the container that x11docker creates
+# GIMP will try to create ~/.config/GIMP
+ccachedir=$HOME/.cache
+cconfigdir=$HOME/.config
+cdatadir=$HOME/Documents
+clocalsharedir=$HOME/.local/share
+
+mkdir -pv "$hcachedir" "$hconfigdir" "$hdatadir" "$hlocalsharedir"
+
+# Arguments for x11docker
+opts=("--backend=${backend}" "--clipboard=no")
+opts+=("--name" "${app}-$(uuidgen)")
+
+# Arguments to pass through x11docker to run command
+xdargs=("--" "--volume" "${hcachedir}/:${ccachedir}/:rw")
+xdargs+=("--volume" "${hconfigdir}/:${cconfigdir}/:rw")
+xdargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
+xdargs+=("--volume" "${hlocalsharedir}/:${clocalsharedir}/:rw")
+
+# Arguments for the application
+cargs=()
+for token in "${@}"; do
+	if [ -f "$token" ]; then
+		hpath=$(readlink -f "${token}")
+		xdargs+=("--volume" "${hpath}:${hpath}:rw")
+		cargs+=("${hpath}")
+	elif [ -d "$token" ]; then
+		hpath=$(readlink -f "${token}")
+		xdargs+=("--volume" "${hpath}/:${hpath}/:rw")
+		cargs+=("${hpath}")
+	else
+		cargs+=("${token}")
 	fi
-fi
+done
 
-mkdir -p $HOST_DIR
+x11docker "${opts[@]}" "${xdargs[@]}" -- "$image" "${cargs[@]}"
 
-IMAGE=docker.io/akiraheid/gimp:latest
-
-##TOOL## run \
-	-d \
-	-e DISPLAY=unix${DISPLAY} \
-	--name GIMP \
-	--network none \
-	--rm \
-	-v $HOST_DIR/:$CONTAINER_DIR/:rw \
-	-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
-	-v /usr/share/fonts/:/usr/share/fonts:ro \
-	${MOUNT_FILE+-v "$fullpath":"$ARG":rw} \
-	$IMAGE ${ARG+"$ARG"}
-
-##TOOL## pull $IMAGE
+"$backend" pull "$image"
