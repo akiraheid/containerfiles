@@ -1,11 +1,22 @@
 # Convert directory findings to just the directory name
 SUBDIRS:=$(patsubst %/,%,$(wildcard */))
+
+# Remove directories that aren't images we manage
+SUBDIRS:=$(subst grype,,$(SUBDIRS))
+SUBDIRS:=$(subst scans,,$(SUBDIRS))
+SUBDIRS:=$(subst trivy,,$(SUBDIRS))
+SUBDIRS:=$(subst x11docker,,$(SUBDIRS))
+
 SUBDIRS_RELEASE:=$(patsubst %,%-release ,$(SUBDIRS))
 SUBDIRS_SCAN:=$(patsubst %,%-scan ,$(SUBDIRS))
 dive=docker.io/wagoodman/dive:v0.10.0
 grype=docker.io/anchore/grype:v0.55.0
 
 .default: all
+
+.PHONY: test
+test:
+	echo $(SUBDIRS)
 
 .PHONY: all
 all: clean update $(SUBDIRS) ## Make all images. Make a specific image by specifying the directory as a target
@@ -18,7 +29,7 @@ check-clean:
 clean: ## Delete all build files
 	-rm -r scans
 
-.PHONY:html
+.PHONY: html
 html: ## Make scan result html page
 	python3 makeGhPage.py
 

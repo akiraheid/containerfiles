@@ -38,7 +38,7 @@ def del_scan_results():
 def get_image_dirs():
     """Return the dirs for image definitions."""
     dirs = next(os.walk(root_dir))[1]
-    ignore_dirs = [".git", "scans", "trivy", "x11docker"]
+    ignore_dirs = [".git", "scans", "grype", "trivy", "x11docker"]
 
     return sorted([x for x in dirs if not x in ignore_dirs])
 
