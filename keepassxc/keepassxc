@@ -1,29 +1,49 @@
 #!/bin/bash
 
-_app=keepassxc
-_host_datadir=${KEEPASSXC_DATA_DIR:-$HOME/Documents/$_app}
-_container_datadir=$HOME
+backend=${CONTAINER_BACKEND:-podman}
 
-image=docker.io/akiraheid/keepassxc:latest
+app=keepassxc
+image=docker.io/akiraheid/${app}:latest
 
-mkdir -pv "$_host_datadir"
+hcachedir=${XDG_CACHE_HOME:-$HOME/.cache/${app}}
+hconfigdir=${XDG_CONFIG_HOME:-$HOME/.config/${app}}
+hdatadir=${KEEPASSXC_DATA_DIR:-$HOME/Documents/$app}
+hlocalsharedir=${XDG_DATA_HOME:-$HOME/.local/share/$app}
+
+# Use the fake $HOME in the container that x11docker creates
+ccachedir=$HOME/.cache
+cconfigdir=$HOME/.config
+cdatadir=$HOME/Documents
+clocalsharedir=$HOME/.local/share
+
+mkdir -pv "$hcachedir" "$hconfigdir" "$hdatadir" "$hlocalsharedir"
 
 # Arguments for x11docker
-opts="--desktop --backend=##TOOL## --clipboard=oneway"
+opts=("--backend=${backend}" "--clipboard=yes")
+opts+=("--name" "${app}-$(uuidgen)")
 
 # Arguments to pass through x11docker to run command
-xdargs="-- --volume ${_host_datadir}:${_container_datadir}:rw"
+xdargs=("--" "--volume" "${hcachedir}/:${ccachedir}/:rw")
+xdargs+=("--volume" "${hconfigdir}/:${cconfigdir}/:rw")
+xdargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
+xdargs+=("--volume" "${hlocalsharedir}/:${clocalsharedir}/:rw")
 
-# Mount user-specified file, if given
-_file=${1:-}
-if [ -n "${_file}" ]; then
-	if [ -f "${_file}" ]; then
-		_file=`readlink -f "${_file}"`
-		_base=`basename ${_file}`
-		xdargs="$xdargs --volume ${_file}:/${_base}:rw"
+# Arguments for the application
+cargs=()
+for token in "${@}"; do
+	if [ -f "$token" ]; then
+		hpath=$(readlink -f "${token}")
+		xdargs+=("--volume" "${hpath}:${hpath}:rw")
+		cargs+=("${hpath}")
+	elif [ -d "$token" ]; then
+		hpath=$(readlink -f "${token}")
+		xdargs+=("--volume" "${hpath}/:${hpath}/:rw")
+		cargs+=("${hpath}")
+	else
+		cargs+=("${token}")
 	fi
-fi
+done
 
-x11docker $opts $xdargs -- $image $args >/dev/null 2>&1 &
+x11docker "${opts[@]}" "${xdargs[@]}" -- "$image" "${cargs[@]}"
 
-##TOOL## pull $image
+"$backend" pull "$image"
