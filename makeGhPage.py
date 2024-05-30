@@ -61,7 +61,7 @@ def trivy_to_html(data):
     for finding in findings:
         severity = finding["properties"]["security-severity"]
         _id = finding["id"]
-        url = finding["helpUri"]
+        url = finding.get("helpUri", "")
         level = finding["properties"]["tags"][2]
         description = finding["fullDescription"]["text"]
         results += [(severity, _id, url, level, description)]
