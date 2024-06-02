@@ -1,22 +1,49 @@
 #!/bin/bash
 
-mkdir -p $HOME/Documents/gnucash
+backend=${CONTAINER_BACKEND:-podman}
 
-# Use 3 instead of latest because latest isn't working
-IMAGE=docker.io/akiraheid/gnucash:3
+app=gnucash
 
-podman run \
-	-d \
-	-e DISPLAY=unix${DISPLAY} \
-	-e GNC_DATA_HOME=/root/.local/share/gnucash \
-	-e GNC_CONFIG_HOME=/root/.config/gnucash \
-	--name GnuCash \
-	--rm \
-	-v gnucash-share:/root/.local/share/gnucash \
-	-v gnucash-config:/root/.config/gnucash \
-	-v $HOME/Documents/gnucash:/root/gnucash \
-	-v /tmp/.X11-unix:/tmp/.X11-unix \
-	-v /usr/share/fonts/:/usr/share/fonts:ro \
-	$IMAGE
+image=docker.io/akiraheid/${app}:latest
 
-##TOOL## pull $IMAGE
+hconfigdir=${XDG_CONFIG_HOME:-$HOME/.config/${app}}
+hdatadir=${GNC_DATA_DIR:-$HOME/Documents/$app}
+hlocalsharedir=${XDG_DATA_HOME:-$HOME/.local/share/$app}
+
+# Use the fake $HOME in the container that x11docker creates
+cconfigdir=$HOME/.config
+cdatadir=$HOME/Documents
+clocalsharedir=$HOME/.local/share
+
+mkdir -pv "$hconfigdir" "$hdatadir" "$hlocalsharedir"
+
+# Arguments for x11docker
+opts=("--backend=${backend}" "--clipboard=no" "--alsa")
+opts+=("--name" "${app}-$(uuidgen)")
+
+# Arguments to pass through x11docker to run command
+xdargs=("--" "--volume" "${hconfigdir}/:${cconfigdir}/:rw")
+xdargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
+xdargs+=("--volume" "${hlocalsharedir}/:${clocalsharedir}/:rw")
+xdargs+=("--env" "GNC_CONFIG_HOME=${cconfigdir}")
+xdargs+=("--env" "GNC_DATA_HOME=${clocalsharedir}")
+
+# Arguments for the application
+cargs=()
+for token in "${@}"; do
+	if [ -f "$token" ]; then
+		hpath=$(readlink -f "${token}")
+		xdargs+=("--volume" "${hpath}:${hpath}:rw")
+		cargs+=("${hpath}")
+	elif [ -d "$token" ]; then
+		hpath=$(readlink -f "${token}")
+		xdargs+=("--volume" "${hpath}/:${hpath}/:rw")
+		cargs+=("${hpath}")
+	else
+		cargs+=("${token}")
+	fi
+done
+
+x11docker "${opts[@]}" "${xdargs[@]}" -- "$image" "${cargs[@]}"
+
+"$backend" pull "$image"
