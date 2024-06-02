@@ -1,31 +1,34 @@
-FROM docker.io/library/alpine:3 AS downloader
-RUN version=`wget -nv -O- https://github.com/kovidgoyal/calibre/releases/latest | \
-		grep -Eo 'tag/v[0-9]+\.[0-9]+\.[0-9]+' | cut -d 'v' -f 2 | head -n 1` \
-	&& wget --no-verbose -O /app.txz https://github.com/kovidgoyal/calibre/releases/download/v${version}/calibre-${version}-x86_64.txz \
-	&& mkdir app \
-	&& cd app \
-	&& tar -xf ../app.txz
+# Install libtiff5, and libwebp6 so that it can be copied to the Calibre image to
+# satisfy Qt. These packages are available on bullseye (11) and not bookworm (12).
+FROM docker.io/library/debian:11 as oldpackages
+RUN apt-get update && apt-get install -y libtiff5-dev libwebp6
 
-FROM docker.io/library/ubuntu:22.04
+FROM docker.io/library/python:3-slim-bookworm
 LABEL maintainer "akiraheid <https://github.com/akiraheid/containerfiles>"
 
-COPY --from=downloader /app /app
-RUN apt-get update && apt-get install -y --no-install-recommends fontconfig \
-		fcitx-rime fonts-wqy-microhei libnss3 libopengl0 libqpdf28 \
-		libxkbcommon-x11-0 libxkbfile1 libxcb-icccm4 libxcb-image0 \
-		libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 \
-		libxcomposite1 libxdamage1 libxrandr2 poppler-utils python3 python3-xdg \
-		ttf-wqy-zenhei xz-utils \
-	&& apt-get install -y speech-dispatcher \
-	&& apt-get clean \
-	&& rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/*
+# Install install script and calibre dependencies according to
+# https://calibre-ebook.com/download_linux, script output, and
+# https://www.mobileread.com/forums/showthread.php?t=333503
+RUN apt-get update && apt-get install -y --no-install-recommends \
+		fontconfig \
+		libegl1 libglx0 libopengl0 \
+		libnss3 libsm6 \
+		libqt6pdf6 libjbig0 libdeflate0 \
+		libxcb-cursor0 libxcomposite1 libxdamage1 libxkbcommon-x11-0 libxkbfile1 \
+		libxrandr2 libxtst6 \
+		xdg-utils xz-utils wget \
+		libxcb-xinerama0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
+		libxcb-render-util0 libxcb-shape0 \
+	&& wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh \
+		| sh /dev/stdin
 
-ENV HOME=/home/calibre
-RUN useradd --create-home --home-dir $HOME calibre \
-	&& chown -R calibre:calibre $HOME \
-	&& usermod -a -G audio,video calibre
+COPY --from=oldpackages /usr/lib/x86_64-linux-gnu/libtiff.so.5* /usr/lib/x86_64-linux-gnu/
+COPY --from=oldpackages /usr/share/doc/libtiff5 /usr/share/doc/
+COPY --from=oldpackages /usr/lib/x86_64-linux-gnu/libwebp.so.6* /usr/lib/x86_64-linux-gnu/
+COPY --from=oldpackages /usr/share/doc/libwebp6 /usr/share/doc/
 
-WORKDIR $HOME
-USER calibre
+# Specified as required by the Calibre download page
+# https://calibre-ebook.com/download_linux
+ENV QT_QPA_PLATFORM=xcb
 
-ENTRYPOINT ["/app/calibre"]
+ENTRYPOINT ["calibre"]

@@ -1,22 +1,54 @@
 #!/bin/bash
 
-DEFAULT_DIR=$HOME/Documents/calibre
-mkdir -p $DEFAULT_DIR
+backend=${CONTAINER_BACKEND:-podman}
 
-IMAGE=docker.io/akiraheid/calibre:latest
+app=calibre
+image=docker.io/akiraheid/${app}:latest
 
-CALIBRE_HOME=/home/calibre
-##TOOL## run \
-	-d \
-	-e CALIBRE_CONFIG_DIRECTORY="${CALIBRE_HOME}/config" \
-	-e DISPLAY=unix${DISPLAY} \
-	--name calibre \
-	--network none \
-	--rm \
-	--userns keep-id \
-	-v ${DEFAULT_DIR}/:"${CALIBRE_HOME}/Calibre Library":rw \
-	-v calibre-config:"${CALIBRE_HOME}/config/":rw \
-	-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
-	$IMAGE
+hcachedir=${XDG_CACHE_HOME:-$HOME/.cache/${app}}
+hconfigdir=${XDG_CONFIG_HOME:-$HOME/.config/${app}}
+hdatadir=${CALIBRE_DATA_DIR:-$HOME/Documents/$app}
+hlocalsharedir=${XDG_DATA_HOME:-$HOME/.local/share/$app}
 
-##TOOL## pull $IMAGE
+# Use the fake $HOME in the container that x11docker creates
+ccachedir=$HOME/.cache
+cconfigdir=$HOME/.config
+cdatadir=$HOME/Documents
+clocalsharedir=$HOME/.local/share
+
+mkdir -pv "$hcachedir" "$hconfigdir" "$hdatadir" "$hlocalsharedir"
+
+# Arguments for x11docker
+opts=("--backend=${backend}" "--clipboard=no" "--alsa")
+opts+=("--name" "${app}-$(uuidgen)")
+
+# Arguments to pass through x11docker to run command
+xdargs=("--" "--volume" "${hcachedir}/:${ccachedir}/:rw")
+xdargs+=("--volume" "${hconfigdir}/:${cconfigdir}/:rw")
+xdargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
+xdargs+=("--volume" "${hlocalsharedir}/:${clocalsharedir}/:rw")
+xdargs+=("--env" "CALIBRE_CACHE_DIRECTORY=${ccachedir}")
+xdargs+=("--env" "CALIBRE_CONFIG_DIRECTORY=${cconfigdir}")
+
+# Print Qt debug information
+xdargs+=("--env" "QT_DEBUG_PLUGINS=1")
+
+# Arguments for the application
+cargs=()
+for token in "${@}"; do
+	if [ -f "$token" ]; then
+		hpath=$(readlink -f "${token}")
+		xdargs+=("--volume" "${hpath}:${hpath}:rw")
+		cargs+=("${hpath}")
+	elif [ -d "$token" ]; then
+		hpath=$(readlink -f "${token}")
+		xdargs+=("--volume" "${hpath}/:${hpath}/:rw")
+		cargs+=("${hpath}")
+	else
+		cargs+=("${token}")
+	fi
+done
+
+x11docker "${opts[@]}" "${xdargs[@]}" -- "$image" "${cargs[@]}"
+
+"$backend" pull "$image"

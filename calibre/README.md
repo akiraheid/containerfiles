@@ -8,7 +8,8 @@ See [calibre](https://github.com/akiraheid/containerfiles/blob/master/calibre/ca
 
 # Known issues
 
-* eBook viewing renders a black screen.
+* eBook viewing does not work.
+* Runtime error: qt.qpa.gl: QXcbConnection: Failed to initialize GLX
 
 # Source code
 
