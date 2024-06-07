@@ -1,11 +1,14 @@
 #!/bin/bash
 
-app=shellcheck
+backend=${CONTAINER_BACKEND:-podman}
 
+app=shellcheck
 image=docker.io/akiraheid/${app}:latest
 
+# Host directories
 hdatadir=$HOME/Documents/${app}
 
+# Container directories
 cdatadir=/app
 
 mkdir -p "$hdatadir"
@@ -38,6 +41,6 @@ for token in "${@}"; do
 	fi
 done
 
-##TOOL## run "${hargs[@]}" $image "${cargs[@]}"
+"$backend" run "${hargs[@]}" $image "${cargs[@]}"
 
-##TOOL## pull $image
+"$backend" pull $image
