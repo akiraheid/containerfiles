@@ -1,4 +1,4 @@
-Signal is a state-of-the-art end-to-end encryption (powered by the open source Signal Protocol) keeps your conversations secure.
+Signal is a simple, powerful, and secure messenger.
 
 Check out their [website](https://signal.org/#signal) and consider [donating](https://signal.org/donate/).
 
