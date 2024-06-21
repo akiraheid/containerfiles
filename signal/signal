@@ -1,25 +1,46 @@
 #!/bin/bash
-set -ex
 
-CONFIG_DIR=$HOME/.config/signal-desktop
-USERDATA_DIR=$CONFIG_DIR/userData
+backend=${CONTAINER_BACKEND:-podman}
 
-mkdir -p "$USERDATA_DIR"
+app=signal
+image=docker.io/akiraheid/${app}:latest
 
-IMAGE=docker.io/akiraheid/signal:latest
+hconfigdir=${XDG_CONFIG_HOME:-$HOME/.config/${app}}
+hdatadir=${SIGNAL_DATA_DIR:-$HOME/Documents/$app}
+hlocalsharedir=${XDG_DATA_HOME:-$HOME/.local/share/$app}
 
-if [ -z "$ARG" ]; then
-	ARG="--no-sandbox"
-fi
+# Use the fake $HOME in the container that x11docker creates
+cconfigdir=$HOME/.config
+cdatadir=$HOME/Documents
+clocalsharedir=$HOME/.local/share
 
-##TOOL## run \
-	-d \
-	-e DISPLAY=unix${DISPLAY} \
-	--name "SignalDesktop" \
-	--rm \
-	-v "$USERDATA_DIR/":/root/.config/Signal/:rw \
-	-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
-	-v /usr/share/fonts/:/usr/share/fonts:ro \
-	$IMAGE ${ARG+"$ARG"}
+mkdir -pv "$hconfigdir" "$hdatadir" "$hlocalsharedir"
 
-##TOOL## pull $IMAGE
+# Arguments for x11docker
+opts=("--backend=${backend}" "--clipboard=no" "--alsa" "--network" "--dbus")
+opts+=("--name" "${app}-$(uuidgen)")
+
+# Arguments to pass through x11docker to run command
+xdargs=("--" "--volume" "${hconfigdir}/:${cconfigdir}/:rw")
+xdargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
+xdargs+=("--volume" "${hlocalsharedir}/:${clocalsharedir}/:rw")
+
+# Arguments for the application
+cargs=("--no-sandbox")
+for token in "${@}"; do
+	if [ -f "$token" ]; then
+		hpath=$(readlink -f "${token}")
+		xdargs+=("--volume" "${hpath}:${hpath}:rw")
+		cargs+=("${hpath}")
+	elif [ -d "$token" ]; then
+		hpath=$(readlink -f "${token}")
+		xdargs+=("--volume" "${hpath}/:${hpath}/:rw")
+		cargs+=("${hpath}")
+	else
+		cargs+=("${token}")
+	fi
+done
+
+x11docker "${opts[@]}" "${xdargs[@]}" -- "$image" "${cargs[@]}"
+
+"$backend" pull "$image"
