@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Audacity
+Exec=audacity %F
+Icon=default
+MimeType=audio/3gpp;audio/aac;audio/mp4;audio/mpeg;audio/ogg;audio/opus;audio/vorbis
