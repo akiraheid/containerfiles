@@ -1,4 +1,4 @@
-FROM debian:12-slim
+FROM docker.io/library/debian:12-slim
 LABEL maintainer "akiraheid <https://github.com/akiraheid/containerfiles>"
 
 RUN apt-get update \

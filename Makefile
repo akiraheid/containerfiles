@@ -42,8 +42,13 @@ scan: check-clean clean $(SUBDIRS_SCAN) ## Scan the images for vulnerabilites
 .PHONY: update
 update: ## Update base images
 	podman pull docker.io/library/alpine:3
+	podman pull docker.io/library/debian:12-slim
+	podman pull docker.io/library/node:current-alpine
+	podman pull docker.io/library/python:3-slim
 	podman pull docker.io/library/python:3-slim-bookworm
 	podman pull docker.io/library/ubuntu:22.04
+	podman pull docker.io/jess/audacity:latest
+	podman pull docker.io/clamav/clamav:latest_base
 
 .PHONY: $(SUBDIRS)
 $(SUBDIRS): ## Make a specific image
