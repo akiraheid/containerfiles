@@ -8,7 +8,7 @@ image=docker.io/akiraheid/${app}:latest
 chomedir=/home/${app}
 
 # Container tool arguments
-xdargs=("--userns=keep-id" "--user=$(id -u):$(id -g)")
+xdargs=("--userns=keep-id" "--user=$(id -u):$(id -g)" "--rm")
 
 # Arguments for the application
 cargs=()
