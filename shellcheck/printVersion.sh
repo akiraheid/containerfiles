@@ -1,3 +1,3 @@
 #!/bin/bash
 
-podman run "$1" --version | grep "version: " | cut -d " " -f 2
+podman run --rm "$1" --version | grep "version: " | cut -d " " -f 2
