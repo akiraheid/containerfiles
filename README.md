@@ -3,8 +3,9 @@ A collection of software containers for use as desktop applications ("apps").
 # Requirements
 
 Install a container runtime tool:
-* [Docker](https://docs.docker.com/engine/install/)
-* [Podman](https://podman.io/docs/installation)
+
+- [Docker](https://docs.docker.com/engine/install/)
+- [Podman](https://podman.io/docs/installation)
 
 ## GUI apps
 
@@ -26,7 +27,7 @@ Nothing else required.
 
 Install an application with the install script.
 
-	./install gimp
+    ./install gimp
 
 Run the application like any other throught the app menu or command line
 interface (CLI).
