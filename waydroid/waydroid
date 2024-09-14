@@ -1,0 +1,47 @@
+#!/bin/bash
+
+backend=${CONTAINER_BACKEND:-podman}
+
+app=waydroid
+image=localhost/${app}:latest
+#image=docker.io/akiraheid/${app}:latest
+
+hconfigdir=${XDG_CONFIG_HOME:-$HOME/.config/${app}}
+hdatadir=${WAYDROID_DATA_DIR:-$HOME/Documents/$app}
+hlocalsharedir=${XDG_DATA_HOME:-$HOME/.local/share/$app}
+
+# Use the fake $HOME in the container that x11docker creates
+cconfigdir=$HOME/.config
+cdatadir=$HOME/Documents
+clocalsharedir=$HOME/.local/share
+
+mkdir -pv "$hconfigdir" "$hdatadir" "$hlocalsharedir"
+
+# Arguments for x11docker
+opts=("--backend=${backend}" "--clipboard=no" "--alsa")
+opts+=("--name" "${app}-$(uuidgen)")
+
+# Arguments to pass through x11docker to run command
+xdargs=("--" "--volume" "${hconfigdir}/:${cconfigdir}/:rw")
+xdargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
+xdargs+=("--volume" "${hlocalsharedir}/:${clocalsharedir}/:rw")
+
+# Arguments for the application
+cargs=()
+for token in "${@}"; do
+	if [ -f "$token" ]; then
+		hpath=$(readlink -f "${token}")
+		xdargs+=("--volume" "${hpath}:${hpath}:rw")
+		cargs+=("${hpath}")
+	elif [ -d "$token" ]; then
+		hpath=$(readlink -f "${token}")
+		xdargs+=("--volume" "${hpath}/:${hpath}/:rw")
+		cargs+=("${hpath}")
+	else
+		cargs+=("${token}")
+	fi
+done
+
+x11docker "${opts[@]}" "${xdargs[@]}" -- "$image" "${cargs[@]}"
+
+"$backend" pull "$image" 2>/dev/null
