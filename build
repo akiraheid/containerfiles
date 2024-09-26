@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+'''Optimize layers sharing between multiple images.'''
+
+from os import getcwd
+from pprint import pprint
+from subprocess import run
+
+def get_layers(cfile):
+    '''Return a list of layers from the Containerfile.'''
+    contents = ''
+    with open(cfile, 'r', encoding='utf-8') as fp:
+        contents = fp.read()
+
+    contents = contents.replace('\\\n', '')
+    layers = [x.strip() for x in contents.splitlines() if x and not x.strip().startswith('#')]
+    return layers
+
+def get_final_layers(layers):
+    '''Return a list of layer commands used for the final image.'''
+    for idx, layer in enumerate(reversed(layers), start=1):
+        if layer.startswith('FROM'):
+            return layers[-idx:]
+
+    return layers
+
+def parse_apt_packages(layers):
+    '''Return a set of packages installed by apt in layer commands.'''
+    packages = set([])
+    for layer in layers:
+        if not ('apt install' in layer or 'apt-get install' in layer):
+            continue
+
+        cmds = [x.strip() for x in layer.split('&&')]
+        for cmd in cmds:
+            if not (cmd.startswith('apt-get install') or cmd.startswith('apt install')):
+                continue
+
+            for arg in [x.strip() for x in cmd.split(' ')[2:]]:
+                if arg.startswith('-'):
+                    continue
+
+                packages.add(arg)
+            # TODO get all package dependencies
+
+    return packages
+
+def parse_apk_packages(layers):
+    '''Return a set of packages installed by apk in layer commands.'''
+    packages = set([])
+    for layer in layers:
+        if not 'apk add' in layer:
+            continue
+
+        cmds = [x.strip() for x in layer.split('&&')]
+        cmds = [x.replace('RUN ', '') for x in cmds]
+        print(cmds)
+        for cmd in cmds:
+            if not (cmd.startswith('apk add') or cmd.starts):
+                continue
+
+            for arg in [x.strip() for x in cmd.split(' ')[2:]]:
+                if arg.startswith('-'):
+                    continue
+
+                packages.add(arg)
+            # TODO get all package dependencies
+
+    return packages
+
+# Fix layer command formatting with layer.replace(' \t', ' \\\n\t')
+
+def get_optimized_images(apps):
+    '''Return the images to create and what images use those images.'''
+    #images = {
+    #        'image1': {
+    #            'packages': ('pkg1', 'pkg2'),
+    #            'uses': '',
+    #            }
+    #        'image2': {
+    #            'packages': ('pkg3', 'pkg4'),
+    #            'uses': 'image1',
+    #            }
+    #        }
+
+    # Parse all Containerfiles and extract packages installed
+    images = {}
+    for app, values in apps.items():
+        layers = get_layers(values.get('cfile'))
+        base = final_layers[0].split(' ')[1]
+        packages = set([])
+        if 'ubuntu' in base or 'debian' in base:
+            packages = parse_apt_packages(layers)
+        elif 'alpine':
+            packages = parse_apk_packages(layers)
+
+        images[app] = {
+                'layers': layers,
+                'packages': packages,
+                'uses': base,
+                }
+
+    # Generate optimized layers for all images
+
+    return images
+
+def main():
+    '''CLI behavior.'''
+    # TODO Figure out why 'shell=True' returns all files instead of Dockerfiles
+    containerfiles = run(
+            ['find', getcwd(), '-name', 'Dockerfile', '-type', 'f'],
+            capture_output=True, check=False).stdout.splitlines()
+
+    # Parse Containerfile layers (track what layers came from what app so that
+    # the optimized Containerfile can be generated for that app
+    cfiles = []
+    for cfile in [x.decode('utf-8') for x in containerfiles]:
+        app = cfile.split('/')[-2]
+        cfiles[app] = {'cfile': cfile}
+
+    containerfiles = {}
+    images = get_optimized_images(cfiles)
+    pprint(images)
+    # generate Containerfiles
+    # build Containerfiles
+
+if __name__ == '__main__':
+    main()
