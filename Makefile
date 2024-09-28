@@ -47,7 +47,6 @@ update: ## Update base images
 	podman pull docker.io/library/python:3-slim
 	podman pull docker.io/library/python:3-slim-bookworm
 	podman pull docker.io/library/ubuntu:22.04
-	podman pull docker.io/jess/audacity:latest
 	podman pull docker.io/clamav/clamav:latest_base
 
 .PHONY: $(SUBDIRS)
