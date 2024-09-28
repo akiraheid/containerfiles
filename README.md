@@ -33,3 +33,10 @@ Run the application like any other throught the app menu or command line
 interface (CLI).
 
     gimp
+
+# Development
+
+When creating a new image for an app, be sure to check
+[Alpine](https://pkgs.alpinelinux.org/packages) and
+[Debian](https://www.debian.org/distrib/packages) package repositories before
+doing manual installs. Using the packages generally resolves most dependencies.
