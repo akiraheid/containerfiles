@@ -18,7 +18,7 @@ clocalsharedir=$HOME/.local/share
 mkdir -pv "$hconfigdir" "$hdatadir" "$hlocalsharedir"
 
 # Arguments for x11docker
-opts=("--backend=${backend}" "--clipboard=no" "--alsa")
+opts=("--backend=${backend}" "--clipboard=no")
 opts+=("--name" "${app}-$(uuidgen)")
 
 # Arguments to pass through x11docker to run command
