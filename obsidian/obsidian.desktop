@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Obsidian
-Exec=AppRun --no-sandbox %U
+Exec=obsidian --no-sandbox %U
 Terminal=false
 Type=Application
 Icon=obsidian
