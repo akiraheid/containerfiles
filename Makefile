@@ -33,6 +33,14 @@ clean: ## Delete all build files
 html: ## Make scan result html page
 	python3 makeGhPage.py
 
+.PHONY: lint
+lint: ## Check for lint
+	@find -iname '*.sh' -exec shellcheck -s bash {} +
+
+.PHONY: pretty
+pretty: ## Format files with prettier
+	@find -iname '*.md' -exec prettier -w {} +
+
 .PHONY: release
 release: clean $(SUBDIRS_RELEASE) ## Push the images to docker.io
 
