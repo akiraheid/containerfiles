@@ -9,7 +9,7 @@ root_dir = os.getcwd()
 scan_dir = "scans"
 html_name = "index.html"
 trivy_version = "0.63.0"
-clamav_version = "0.105"
+clamav_version = "1.4.2"
 
 def clamav_to_html(data):
     """Convert ClamAV text to HTML."""
@@ -136,6 +136,14 @@ def save_image(dirname):
     subprocess.run(command)
     return archive
 
+def update_clamav_db():
+    print("Updating ClamAV database")
+    cache = "clamav-cache"
+    command = ["podman", "run", "--pull", "always", "--rm", "-v", f"{cache}:/var/lib/clamav/:rw",
+            f"docker.io/clamav/clamav:{clamav_version}_base", "freshclam"]
+
+    subprocess.run(command)
+
 def scan_clamav(archive_name):
     print("... with ClamAV")
     cache = "clamav-cache"
@@ -143,7 +151,7 @@ def scan_clamav(archive_name):
     command = ["podman", "run", "--pull", "always", "--rm", "-v", f"{cache}:/var/lib/clamav/:rw",
             "-v", f"{root_dir}/{scan_dir}/:/root/{scan_dir}/:rw",
             "-w", f"/root/{scan_dir}",
-            f"docker.io/clamav/clamav:{clamav_version}", "clamscan", archive_name]
+            f"docker.io/clamav/clamav:{clamav_version}_base", "clamscan", archive_name]
 
     proc = subprocess.run(command, capture_output=True)
     out = proc.stdout.decode("utf-8")
@@ -166,6 +174,8 @@ if __name__ == "__main__":
     image_dirs = get_image_dirs()
     if not os.path.isdir(scan_dir):
         os.mkdir(scan_dir)
+
+    update_clamav_db()
 
     for image_dir in image_dirs:
         archive = save_image(image_dir)
