@@ -8,7 +8,7 @@ import subprocess
 root_dir = os.getcwd()
 scan_dir = "scans"
 html_name = "index.html"
-trivy_version = "0.34.0"
+trivy_version = "0.63.0"
 clamav_version = "0.105"
 
 def clamav_to_html(data):
