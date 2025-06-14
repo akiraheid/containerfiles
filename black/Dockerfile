@@ -1,4 +1,5 @@
 FROM python:3-slim
+LABEL maintainer "akiraheid <https://github.com/akiraheid/containerfiles>"
 
 RUN pip install black
 
