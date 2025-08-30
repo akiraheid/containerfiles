@@ -13,7 +13,8 @@ cdatadir=/app
 
 mkdir -p "$hdatadir"
 
-hargs=("--name" "${app}-$(uuidgen)" "--network" "none" "--rm")
+hargs=("--name" "${app}-$(cat /proc/sys/kernel/random/uuid)")
+hargs+=("--network" "none" "--rm")
 hargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
 cargs=()
 

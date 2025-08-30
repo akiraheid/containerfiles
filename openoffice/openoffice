@@ -20,7 +20,7 @@ IMAGE=docker.io/akiraheid/openoffice:latest
 ##TOOL## run \
 	-d \
 	-e DISPLAY=unix${DISPLAY} \
-	--name OpenOffice-`uuidgen` \
+	--name "OpenOffice-$(cat /proc/sys/kernel/random/uuid)" \
 	--network none \
 	--rm \
 	-v $HOST_DIR/:$CONTAINER_DIR/:rw \

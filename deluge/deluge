@@ -16,7 +16,7 @@ opts="--desktop --backend=##TOOL## --clipboard=superv --network"
 
 # Arguments to pass through x11docker to run command
 xdargs=("--" "--rm" "-p" "61619:58008" "-p" "54237-54337:42069-42169")
-xdargs+=("--name" "${app}-$(uuidgen)")
+xdargs+=("--name" "${app}-$(cat /proc/sys/kernel/random/uuid)")
 xdargs+=("--volume" "${hconfigdir}/:${cconfigdir}/:rw")
 xdargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
 

@@ -10,8 +10,9 @@ cdatadir=/root/data
 
 mkdir -p "$hcachedir" "$hdatadir"
 
-hargs=("--volume" "${hcachedir}/:${ccachedir}/:rw")
-hargs+=("--name" "trivy-$(uuidgen)" "--rm")
+hargs=("--name" "${app}-$(cat /proc/sys/kernel/random/uuid)")
+hargs+=("--volume" "${hcachedir}/:${ccachedir}/:rw")
+hargs+=("--rm")
 
 cargs=()
 

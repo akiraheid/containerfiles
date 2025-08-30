@@ -10,9 +10,11 @@ cdbdir=/var/lib/clamav
 
 mkdir -p "$hdatadir" "$hdbdir"
 
-hargs=("--name" "clamav-`uuidgen`" "--network" "none" "--rm")
+hargs=("--network" "none" "--rm")
 hargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
 hargs+=("--volume" "${hdbdir}/:${cdbdir}/:rw")
+hargs+=("--name" "${app}-$(cat /proc/sys/kernel/random/uuid)")
+
 cargs=()
 
 for token in "${@}"; do

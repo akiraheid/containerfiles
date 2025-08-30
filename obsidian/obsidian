@@ -18,7 +18,7 @@ mkdir -pv "$hconfigdir" "$hdatadir" "$hlocalsharedir"
 
 # Arguments for x11docker
 opts=("--backend=${backend}" "--clipboard=yes" "--network=none")
-opts+=("--name" "${app}-$(uuidgen)")
+opts+=("--name" "${app}-$(cat /proc/sys/kernel/random/uuid)")
 
 # Arguments to pass through x11docker to run command
 xdargs=("--" "--volume" "${hconfigdir}/:${cconfigdir}/:rw")

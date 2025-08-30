@@ -14,7 +14,8 @@ mkdir -p "$hcachedir" "$hdatadir"
 hargs=("-e" "GRYPE_DB_CACHE_DIR=${ccachedir}")
 hargs+=("--volume" "${hcachedir}/:${ccachedir}/:rw")
 hargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
-hargs+=("--name" "${app}-$(uuidgen)" "--rm")
+hargs+=("--rm")
+hargs+=("--name" "${app}-$(cat /proc/sys/kernel/random/uuid)")
 
 cargs=()
 

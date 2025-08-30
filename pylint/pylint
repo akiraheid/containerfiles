@@ -10,7 +10,8 @@ image=docker.io/akiraheid/pylint:latest
 cdatadir=/root
 
 # Arguments for the run command
-hargs=("--name" "pylint-$(uuidgen)" "--network" "none" "--rm")
+hargs=("--name" "pylint-$(cat /proc/sys/kernel/random/uuid)")
+hargs+=("--network" "none" "--rm")
 
 # Arguments for the container entrypoint
 cargs=()
