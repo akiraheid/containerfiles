@@ -1,6 +1,8 @@
 """Generate the HTML page with scan results for all images."""
 
+import argparse
 import json
+import logging
 import os
 from shutil import rmtree
 import subprocess
@@ -27,12 +29,17 @@ def clamav_to_html(data):
 
     return ret
 
+def configure_logging(debug=False):
+    level = logging.DEBUG if debug else logging.INFO
+    log_format = "%(levelname)s:%(lineno)d:%(message)s" if debug else "%(message)s"
+    logging.basicConfig(format=log_format, level=level)
+
 def del_image(archive):
-    print(f"Deleting {archive}")
+    logging.debug(f"Deleting {archive}")
     os.remove(archive)
 
 def del_scan_results():
-    print("Deleting scan results")
+    logging.debug("Deleting scan results")
     rmtree(scan_dir)
 
 def get_image_dirs():
@@ -47,6 +54,16 @@ def load_json(file):
     with open(file, "r") as fp:
         data = json.load(fp)
     return data
+
+def parse_args():
+    """Parse CLI arguments and return the argument information."""
+    parser = argparse.ArgumentParser(
+            "Generate an HTML page for static analysis findings.")
+
+    debug_help = "Print debug information"
+    parser.add_argument("--debug", action="store_true", default=False, help=debug_help)
+
+    return parser.parse_args()
 
 def trivy_to_html(data):
     """Convert Trivy SARIF data to HTML."""
@@ -81,7 +98,7 @@ def trivy_to_html(data):
 
 def make_html(results_dir):
     """Generate the report HTML page."""
-    print("Generate HTML")
+    logging.info("Generating scan results HTML page")
     style = """\
             body {
                 background-color: #000000;
@@ -118,6 +135,7 @@ def make_html(results_dir):
         with open(f"scans/{image}-clamav.txt", "r") as fp:
             data = fp.read()
 
+        logging.debug(f"ClamAV=>HTML: {data}")
         output += clamav_to_html(data)
 
         data = load_json(f"scans/{image}-trivy.json")
@@ -127,17 +145,15 @@ def make_html(results_dir):
     with open(html_name, "w") as fp:
         fp.write(output)
 
-    print("Generate HTML - done")
-
 def save_image(dirname):
     archive = f"{scan_dir}/{dirname}.tar"
-    print(f"Saving image as {archive}")
+    logging.debug(f"Saving image as {archive}")
     command = ["podman", "save", "-o", archive, f"localhost/{dirname}:latest"]
     subprocess.run(command)
     return archive
 
 def update_clamav_db():
-    print("Updating ClamAV database")
+    logging.info("Updating ClamAV database")
     cache = "clamav-cache"
     command = ["podman", "run", "--pull", "always", "--rm", "-v", f"{cache}:/var/lib/clamav/:rw",
             f"docker.io/clamav/clamav:{clamav_version}_base", "freshclam"]
@@ -145,7 +161,7 @@ def update_clamav_db():
     subprocess.run(command)
 
 def scan_clamav(archive_name):
-    print("... with ClamAV")
+    logging.info("... with ClamAV")
     cache = "clamav-cache"
     image = archive_name.split(".")[0]
     command = ["podman", "run", "--pull", "always", "--rm", "-v", f"{cache}:/var/lib/clamav/:rw",
@@ -159,7 +175,7 @@ def scan_clamav(archive_name):
         fp.write(out)
 
 def scan_trivy(archive_name):
-    print("... with Trivy")
+    logging.info("... with Trivy")
     cache = "trivy-cache"
     image = archive_name.split(".")[0]
     command = ["podman", "run", "--rm", "-v", f"{cache}:/root/.cache/:rw",
@@ -171,6 +187,9 @@ def scan_trivy(archive_name):
     subprocess.run(command)
 
 if __name__ == "__main__":
+    args = parse_args()
+    configure_logging(args.debug)
+
     image_dirs = get_image_dirs()
     if not os.path.isdir(scan_dir):
         os.mkdir(scan_dir)
@@ -179,7 +198,7 @@ if __name__ == "__main__":
 
     for image_dir in image_dirs:
         archive = save_image(image_dir)
-        print(f"Scanning {archive}")
+        logging.info(f"Scanning {archive}")
         scan_clamav(archive)
         scan_trivy(archive)
         del_image(archive)
