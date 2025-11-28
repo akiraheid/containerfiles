@@ -1,0 +1,42 @@
+#!/bin/bash
+set -e
+
+backend=${CONTAINER_BACKEND:-podman}
+
+app=pymarkdownlnt
+image=docker.io/akiraheid/${app}:latest
+
+chomedir=/home/${app}
+
+# Container tool arguments
+xdargs=("--userns=keep-id" "--user=$(id -u):$(id -g)" "--rm" "--network=none")
+
+# Arguments for the application
+cargs=()
+for token in "${@}"; do
+	if [ -f "$token" ]; then
+		hpath=$(readlink -f "${token}")
+
+		# Remove leading slash
+		noleading=$(echo "${hpath}" | cut -c2-)
+		cpath=${chomedir}/${noleading}
+
+		xdargs+=("--volume" "${hpath}:${cpath}:rw")
+		cargs+=("${cpath}")
+	elif [ -d "$token" ]; then
+		hpath=$(readlink -f "${token}")
+
+		# Remove leading slash
+		noleading=$(echo "${hpath}" | cut -c2-)
+		cpath=${chomedir}/${noleading}
+
+		xdargs+=("--volume" "${hpath}/:${cpath}/:rw")
+		cargs+=("${cpath}")
+	else
+		cargs+=("${token}")
+	fi
+done
+
+"$backend" run "${xdargs[@]}" "$image" "${cargs[@]}"
+
+"$backend" pull "$image"
