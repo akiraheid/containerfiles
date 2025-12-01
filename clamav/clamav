@@ -1,12 +1,16 @@
 #!/bin/bash
 
-image=docker.io/akiraheid/clamav:latest
+backend=${CONTAINER_BACKEND:-podman}
 
-hdatadir=$HOME/Documents/clamav/data
-hdbdir=$HOME/Documents/clamav/db
+app=clamav
+image=docker.io/akiraheid/${app}:latest
 
-cdatadir=/home/clamav/clamav
-cdbdir=/var/lib/clamav
+happdir=$HOME/Documents/${app}
+hdatadir=${happdir}/data
+hdbdir=${happdir}/db
+
+cdatadir=/home/${app}/${app}
+cdbdir=/var/lib/${app}
 
 mkdir -p "$hdatadir" "$hdbdir"
 
@@ -16,23 +20,21 @@ hargs+=("--volume" "${hdbdir}/:${cdbdir}/:rw")
 hargs+=("--name" "${app}-$(cat /proc/sys/kernel/random/uuid)")
 
 cargs=()
-
 for token in "${@}"; do
-
 	if [ -f "$token" ]; then
-		hpath=`readlink -f "${token}"`
+		hpath=$(readlink -f "${token}")
 
 		# Remove leading slash
-		noleading=`echo "${hpath}" | cut -c2-`
+		noleading=$(echo "${hpath}" | cut -c2-)
 		cpath=${cdatadir}/${noleading}
 
 		hargs+=("--volume" "${hpath}:${cpath}:ro")
 		cargs+=("${cpath}")
 	elif [ -d "$token" ]; then
-		hpath=`readlink -f "${token}"`
+		hpath=$(readlink -f "${token}")
 
 		# Remove leading slash
-		noleading=`echo "${hpath}" | cut -c2-`
+		noleading=$(echo "${hpath}" | cut -c2-)
 		cpath=${cdatadir}/${noleading}
 
 		hargs+=("--volume" "${hpath}/:${cpath}/:ro")
@@ -42,13 +44,12 @@ for token in "${@}"; do
 	fi
 done
 
-echo "Updating database..."
 dbargs=("--name" "clamav-db-update" "--rm")
 dbargs+=("--volume" "${hdbdir}/:${cdbdir}/:rw")
-##TOOL## run "${dbargs[@]}" $image freshclam
+"$backend" run "${dbargs[@]}" "$image" freshclam
 
 # Run scan without network access to stay private
-echo "Scanning..."
-##TOOL## run "${hargs[@]}" $image clamscan "${cargs[@]}"
+"$backend" run "${hargs[@]}" "$image" clamscan "${cargs[@]}"
 
-##TOOL## pull $image
+# Pull new images in the background and don't print anything to the terminal
+"$backend" pull "$image" >/dev/null 2>&1 &
