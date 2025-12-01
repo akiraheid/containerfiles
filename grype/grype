@@ -1,4 +1,7 @@
 #!/bin/bash
+
+backend=${CONTAINER_BACKEND:-podman}
+
 app=grype
 image=docker.io/anchore/${app}:latest
 
@@ -18,7 +21,6 @@ hargs+=("--rm")
 hargs+=("--name" "${app}-$(cat /proc/sys/kernel/random/uuid)")
 
 cargs=()
-
 for token in "${@}"; do
 	if [ -f "$token" ]; then
 		hpath=$(readlink -f "${token}")
@@ -43,6 +45,7 @@ for token in "${@}"; do
 	fi
 done
 
-##TOOL## run "${hargs[@]}" "${image}" "${cargs[@]}"
+"$backend" run "${hargs[@]}" "$image" "${cargs[@]}"
 
-##TOOL## pull "${image}"
+# Pull new images in the background and don't print anything to the terminal
+"$backend" pull "$image" >/dev/null 2>&1 &
