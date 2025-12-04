@@ -13,6 +13,7 @@ html_name = "index.html"
 trivy_version = "0.63.0"
 clamav_version = "1.4.2"
 
+
 def clamav_to_html(data):
     """Convert ClamAV text to HTML."""
     ret = "<h3>ClamAV</h3>\n"
@@ -29,18 +30,22 @@ def clamav_to_html(data):
 
     return ret
 
+
 def configure_logging(debug=False):
     level = logging.DEBUG if debug else logging.INFO
     log_format = "%(levelname)s:%(lineno)d:%(message)s" if debug else "%(message)s"
     logging.basicConfig(format=log_format, level=level)
 
+
 def del_image(archive):
     logging.debug(f"Deleting {archive}")
     os.remove(archive)
 
+
 def del_scan_results():
     logging.debug("Deleting scan results")
     rmtree(scan_dir)
+
 
 def get_image_dirs():
     """Return the dirs for image definitions."""
@@ -49,21 +54,25 @@ def get_image_dirs():
 
     return sorted([x for x in dirs if not x in ignore_dirs])
 
+
 def load_json(file):
     data = None
     with open(file, "r") as fp:
         data = json.load(fp)
     return data
 
+
 def parse_args():
     """Parse CLI arguments and return the argument information."""
     parser = argparse.ArgumentParser(
-            "Generate an HTML page for static analysis findings.")
+        "Generate an HTML page for static analysis findings."
+    )
 
     debug_help = "Print debug information"
     parser.add_argument("--debug", action="store_true", default=False, help=debug_help)
 
     return parser.parse_args()
+
 
 def trivy_to_html(data):
     """Convert Trivy SARIF data to HTML."""
@@ -95,6 +104,7 @@ def trivy_to_html(data):
     ret += "</table>\n"
 
     return ret
+
 
 def make_html(results_dir):
     """Generate the report HTML page."""
@@ -145,6 +155,7 @@ def make_html(results_dir):
     with open(html_name, "w") as fp:
         fp.write(output)
 
+
 def save_image(dirname):
     archive = f"{scan_dir}/{dirname}.tar"
     logging.debug(f"Saving image as {archive}")
@@ -152,39 +163,78 @@ def save_image(dirname):
     subprocess.run(command)
     return archive
 
+
 def update_clamav_db():
     logging.info("Updating ClamAV database")
     cache = "clamav-cache"
-    command = ["podman", "run", "--pull", "always", "--rm", "-v", f"{cache}:/var/lib/clamav/:rw",
-            f"docker.io/clamav/clamav:{clamav_version}_base", "freshclam"]
+    command = [
+        "podman",
+        "run",
+        "--pull",
+        "always",
+        "--rm",
+        "-v",
+        f"{cache}:/var/lib/clamav/:rw",
+        f"docker.io/clamav/clamav:{clamav_version}_base",
+        "freshclam",
+    ]
 
     subprocess.run(command)
+
 
 def scan_clamav(archive_name):
     logging.info("... with ClamAV")
     cache = "clamav-cache"
     image = archive_name.split(".")[0]
-    command = ["podman", "run", "--pull", "always", "--rm", "-v", f"{cache}:/var/lib/clamav/:rw",
-            "-v", f"{root_dir}/{scan_dir}/:/root/{scan_dir}/:rw",
-            "-w", f"/root/{scan_dir}",
-            f"docker.io/clamav/clamav:{clamav_version}_base", "clamscan", archive_name]
+    command = [
+        "podman",
+        "run",
+        "--pull",
+        "always",
+        "--rm",
+        "-v",
+        f"{cache}:/var/lib/clamav/:rw",
+        "-v",
+        f"{root_dir}/{scan_dir}/:/root/{scan_dir}/:rw",
+        "-w",
+        f"/root/{scan_dir}",
+        f"docker.io/clamav/clamav:{clamav_version}_base",
+        "clamscan",
+        archive_name,
+    ]
 
     proc = subprocess.run(command, capture_output=True)
     out = proc.stdout.decode("utf-8")
     with open(f"{image}-clamav.txt", "w") as fp:
         fp.write(out)
 
+
 def scan_trivy(archive_name):
     logging.info("... with Trivy")
     cache = "trivy-cache"
     image = archive_name.split(".")[0]
-    command = ["podman", "run", "--rm", "-v", f"{cache}:/root/.cache/:rw",
-            "-v", f"{root_dir}/{scan_dir}/:/root/{scan_dir}/:rw",
-            "-w", "/root",
-            f"docker.io/aquasec/trivy:{trivy_version}", "image", "--format", "sarif",
-                "-o", f"{image}-trivy.json", "--input", archive_name]
+    command = [
+        "podman",
+        "run",
+        "--rm",
+        "-v",
+        f"{cache}:/root/.cache/:rw",
+        "-v",
+        f"{root_dir}/{scan_dir}/:/root/{scan_dir}/:rw",
+        "-w",
+        "/root",
+        f"docker.io/aquasec/trivy:{trivy_version}",
+        "image",
+        "--format",
+        "sarif",
+        "-o",
+        f"{image}-trivy.json",
+        "--input",
+        archive_name,
+    ]
 
     subprocess.run(command)
+
 
 if __name__ == "__main__":
     args = parse_args()
