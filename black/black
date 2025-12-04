@@ -9,6 +9,7 @@ chomedir=/home/${app}
 
 # Container tool arguments
 xdargs=("--userns=keep-id" "--user=$(id -u):$(id -g)" "--rm")
+xdargs+=("--name" "${app}-$(cat /proc/sys/kernel/random/uuid)")
 
 # Arguments for the application
 cargs=()
@@ -38,4 +39,4 @@ done
 
 "$backend" run "${xdargs[@]}" "$image" "${cargs[@]}"
 
-"$backend" pull "$image"
+"$backend" pull "$image" >/dev/null 2>&1
