@@ -1,37 +1,54 @@
 #!/bin/bash
-image=docker.io/aquasec/trivy:latest
 
-happdir=$HOME/Documents/trivy
-hcachedir=${happdir}/cache
-hdatadir=${happdir}/data
+backend=${CONTAINER_BACKEND:-podman}
 
-ccachedir=/root/.cache
-cdatadir=/root/data
+app=trivy
+image=docker.io/aquasec/${app}:latest
 
-mkdir -p "$hcachedir" "$hdatadir"
+# Host directories
+hcachedir=${XDG_CACHE_HOME:-$HOME/.cache}
 
+mkdir -p "$hcachedir"
+
+# XDG_CACHE_DIR access mode MUST be 700
+# https://specifications.freedesktop.org/basedir/latest/
+chmod 700 "$hcachedir"
+
+# Container directories
+chomedir=/root
+ccachedir=${chomedir}/.cache
+
+# Args for container runtime
 hargs=("--name" "${app}-$(cat /proc/sys/kernel/random/uuid)")
 hargs+=("--volume" "${hcachedir}/:${ccachedir}/:rw")
 hargs+=("--rm")
 
+# Arguments for the application
 cargs=()
-
 for token in "${@}"; do
-	cpath=${cdatadir}/${token}
-
 	if [ -f "$token" ]; then
 		hpath=$(readlink -f "${token}")
-		hargs+=("--volume" "${hpath}:${cpath}:ro")
+
+		# Remove leading slash
+		noleading=$(echo "${hpath}" | cut -c2-)
+		cpath=${chomedir}/${noleading}
+
+		xdargs+=("--volume" "${hpath}:${cpath}:rw")
 		cargs+=("${cpath}")
 	elif [ -d "$token" ]; then
 		hpath=$(readlink -f "${token}")
-		hargs+=("--volume" "${hpath}/:${cpath}/:ro")
+
+		# Remove leading slash
+		noleading=$(echo "${hpath}" | cut -c2-)
+		cpath=${chomedir}/${noleading}
+
+		xdargs+=("--volume" "${hpath}/:${cpath}/:rw")
 		cargs+=("${cpath}")
 	else
 		cargs+=("${token}")
 	fi
 done
 
-##TOOL## run "${hargs[@]}" "${image}" "${cargs[@]}"
+"$backend" run "${xdargs[@]}" "$image" "${cargs[@]}"
 
-##TOOL## pull "${image}"
+"$backend" pull "$image" >/dev/null 2>&1
