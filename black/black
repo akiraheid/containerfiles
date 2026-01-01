@@ -39,4 +39,4 @@ done
 
 "$backend" run "${xdargs[@]}" "$image" "${cargs[@]}"
 
-"$backend" pull "$image" >/dev/null 2>&1
+"$backend" pull "$image" >/dev/null 2>&1 &
