@@ -6,7 +6,7 @@ RUN wget -O app.tgz \
 	&& mkdir -p /app \
 	&& mv ./rust-mcp-filesystem-x86_64-unknown-linux-gnu/* /app/
 
-FROM python:3-slim
+FROM docker.io/library/python:3-slim
 LABEL maintainer "akiraheid <https://github.com/akiraheid/containerfiles>"
 
 COPY --from=downloader /app/* /opt/rust-mcp-filesystem/
