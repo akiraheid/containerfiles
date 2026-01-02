@@ -1,4 +1,4 @@
-FROM python:3-slim
+FROM docker.io/library/python:3-slim
 LABEL maintainer "akiraheid <https://github.com/akiraheid/containerfiles>"
 
 RUN pip install black
@@ -11,3 +11,4 @@ WORKDIR $HOME
 USER black
 
 ENTRYPOINT ["black"]
+
