@@ -1,23 +1,26 @@
 #!/bin/bash
+
+backend=${CONTAINER_BACKEND:-podman}
+
 app=deluge
-image=docker.io/akiraheid/${app}:latest
+image=docker.io/akiraheid/${app}:2.2.0
 
 happdir=$HOME/Downloads/${app}
 hconfigdir=${DELUGE_CONFIG_DIR:-$happdir}/config
 hdatadir=${DELUGE_DATA_DIR:-$happdir}/data
 
-cconfigdir=/root/.config/deluge
-cdatadir=/root/Downloads
+cconfigdir=$HOME/.config/deluge
+cdatadir=$HOME/Downloads
 
-mkdir -p "$hconfigdir" "$hdatadir"
+mkdir -pv "$hconfigdir" "$hdatadir"
 
 # Arguments for x11docker
-opts="--desktop --backend=##TOOL## --clipboard=superv --network"
+opts=("--backend=${backend}" "--clipboard=superv" "--network")
+opts+=("--name" "${app}-$(cat /proc/sys/kernel/random/uuid)")
 
 # Arguments to pass through x11docker to run command
-xdargs=("--" "--rm" "-p" "61619:58008" "-p" "54237-54337:42069-42169")
-xdargs+=("--name" "${app}-$(cat /proc/sys/kernel/random/uuid)")
-xdargs+=("--volume" "${hconfigdir}/:${cconfigdir}/:rw")
+#xdargs=("--" "-p" "61619:58008" "-p" "54237-54337:42069-42169")
+xdargs=("--" "--volume" "${hconfigdir}/:${cconfigdir}/:rw")
 xdargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
 
 # Arguments for the application
@@ -26,23 +29,17 @@ cargs=()
 for token in "${@}"; do
 	if [ -f "$token" ]; then
 		hpath=$(readlink -f "${token}")
-		# Remove leading slash
-		noleading=$(echo "${hpath}" | cut -c2-)
-		cpath=${cdatadir}/${noleading}
-		hargs+=("--volume" "${hpath}:${cpath}:ro")
-		cargs+=("${cpath}")
+		xdargs+=("--volume" "${hpath}:${hpath}:rw")
+		cargs+=("${hpath}")
 	elif [ -d "$token" ]; then
 		hpath=$(readlink -f "${token}")
-		# Remove leading slash
-		noleading=$(echo "${hpath}" | cut -c2-)
-		cpath=${cdatadir}/${noleading}
-		hargs+=("--volume" "${hpath}/:${cpath}/:ro")
-		cargs+=("${cpath}")
+		xdargs+=("--volume" "${hpath}/:${hpath}/:rw")
+		cargs+=("${hpath}")
 	else
 		cargs+=("${token}")
 	fi
 done
 
-x11docker $opts $xdargs -- $image $cargs >/dev/null 2>&1 &
+x11docker "${opts[@]}" "${xdargs[@]}" -- "$image" "${cargs[@]}"
 
-##TOOL## pull $image
+"$backend" pull "$image"
