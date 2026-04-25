@@ -1,7 +1,5 @@
-FROM docker.io/library/debian:12-slim
+FROM docker.io/library/alpine:3
 
-RUN apt-get update \
-	&& apt-get install -y --no-install-recommends audacity gtk+3.0 \
-	&& rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache --no-progress audacity
 
 ENTRYPOINT ["audacity"]
