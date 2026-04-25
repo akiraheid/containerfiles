@@ -10,7 +10,7 @@ hconfigdir=${DELUGE_CONFIG_DIR:-$happdir}/config
 hdatadir=${DELUGE_DATA_DIR:-$happdir}/data
 hsharedir=${DELUGE_SHARE_DIR:-$happdir}/share
 
-cconfigdir=$HOME/.config/deluge
+cconfigdir=$HOME/.config
 cdatadir=$HOME/Downloads
 csharedir=$HOME/.local/share
 
