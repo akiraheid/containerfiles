@@ -8,11 +8,13 @@ image=docker.io/akiraheid/${app}:2.2.0
 happdir=$HOME/Downloads/${app}
 hconfigdir=${DELUGE_CONFIG_DIR:-$happdir}/config
 hdatadir=${DELUGE_DATA_DIR:-$happdir}/data
+hsharedir=${DELUGE_SHARE_DIR:-$happdir}/share
 
 cconfigdir=$HOME/.config/deluge
 cdatadir=$HOME/Downloads
+csharedir=$HOME/.local/share
 
-mkdir -pv "$hconfigdir" "$hdatadir"
+mkdir -pv "$hconfigdir" "$hdatadir" "$hsharedir"
 
 # Arguments for x11docker
 opts=("--backend=${backend}" "--clipboard=superv" "--network")
@@ -22,6 +24,7 @@ opts+=("--name" "${app}-$(cat /proc/sys/kernel/random/uuid)")
 #xdargs=("--" "-p" "61619:58008" "-p" "54237-54337:42069-42169")
 xdargs=("--" "--volume" "${hconfigdir}/:${cconfigdir}/:rw")
 xdargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
+xdargs+=("--volume" "${hsharedir}/:${csharedir}/:rw")
 
 # Arguments for the application
 cargs=()
