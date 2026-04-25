@@ -25,6 +25,7 @@ opts+=("--network=none")
 xdargs=("--" "--volume" "${hconfigdir}/:${cconfigdir}/:rw")
 xdargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
 xdargs+=("--volume" "${hlocalsharedir}/:${clocalsharedir}/:rw")
+xdargs+=("--pull=missing")
 
 # Arguments for the application
 cargs=()
