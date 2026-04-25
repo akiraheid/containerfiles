@@ -27,6 +27,7 @@ xdargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
 xdargs+=("--volume" "${hlocalsharedir}/:${clocalsharedir}/:rw")
 xdargs+=("--env" "GNC_CONFIG_HOME=${cconfigdir}")
 xdargs+=("--env" "GNC_DATA_HOME=${clocalsharedir}")
+xdargs+=("--pull=missing")
 
 # Arguments for the application
 cargs=()
