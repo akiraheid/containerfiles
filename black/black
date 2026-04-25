@@ -10,6 +10,7 @@ chomedir=/home/${app}
 # Container tool arguments
 xdargs=("--userns=keep-id" "--user=$(id -u):$(id -g)" "--rm")
 xdargs+=("--name" "${app}-$(cat /proc/sys/kernel/random/uuid)")
+xdargs+=("--pull=missing")
 
 # Arguments for the application
 cargs=()
