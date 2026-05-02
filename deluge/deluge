@@ -5,10 +5,9 @@ backend=${CONTAINER_BACKEND:-podman}
 app=deluge
 image=docker.io/akiraheid/${app}:2.2.0
 
-happdir=$HOME/Downloads/${app}
-hconfigdir=${DELUGE_CONFIG_DIR:-$happdir}/config
-hdatadir=${DELUGE_DATA_DIR:-$happdir}/data
-hsharedir=${DELUGE_SHARE_DIR:-$happdir}/share
+hconfigdir=${XDG_CONFIG_HOME:-$HOME/.config/${app}}
+hdatadir=${DELUGE_DATA_DIR:-$HOME/Downloads/${app}}
+hsharedir=${XDG_DATA_HOME:-$HOME/.local/share/$app}
 
 cconfigdir=$HOME/.config
 cdatadir=$HOME/Downloads
