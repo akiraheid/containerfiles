@@ -21,7 +21,8 @@ opts=("--backend=${backend}" "--clipboard=yes" "--network=none")
 opts+=("--name" "${app}-$(cat /proc/sys/kernel/random/uuid)")
 
 # Arguments to pass through x11docker to run command
-xdargs=("--" "--volume" "${hconfigdir}/:${cconfigdir}/:rw")
+xdargs=("--" "--pull=missing")
+xdargs+=("--volume" "${hconfigdir}/:${cconfigdir}/:rw")
 xdargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
 xdargs+=("--volume" "${hlocalsharedir}/:${clocalsharedir}/:rw")
 
