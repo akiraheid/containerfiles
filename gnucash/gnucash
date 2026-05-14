@@ -6,27 +6,28 @@ app=gnucash
 
 image=docker.io/akiraheid/${app}:latest
 
+hcachedir=${XDG_CACHE_HOME:-$HOME/.cache/${app}}
 hconfigdir=${XDG_CONFIG_HOME:-$HOME/.config/${app}}
 hdatadir=${GNC_DATA_DIR:-$HOME/Documents/$app}
 hlocalsharedir=${XDG_DATA_HOME:-$HOME/.local/share/$app}
 
 # Use the fake $HOME in the container that x11docker creates
+ccachedir=$HOME/.cache
 cconfigdir=$HOME/.config
 cdatadir=$HOME/Documents
 clocalsharedir=$HOME/.local/share
 
-mkdir -pv "$hconfigdir" "$hdatadir" "$hlocalsharedir"
+mkdir -pv "$hcachedir" "$hconfigdir" "$hdatadir" "$hlocalsharedir"
 
 # Arguments for x11docker
 opts=("--backend=${backend}" "--clipboard=no")
 opts+=("--name" "${app}-$(cat /proc/sys/kernel/random/uuid)")
 
 # Arguments to pass through x11docker to run command
-xdargs=("--" "--volume" "${hconfigdir}/:${cconfigdir}/:rw")
+xdargs=("--" "--volume" "${hcachedir}/:${ccachedir}/:rw")
+xdargs+=("--volume" "${hconfigdir}/:${cconfigdir}/:rw")
 xdargs+=("--volume" "${hdatadir}/:${cdatadir}/:rw")
 xdargs+=("--volume" "${hlocalsharedir}/:${clocalsharedir}/:rw")
-xdargs+=("--env" "GNC_CONFIG_HOME=${cconfigdir}")
-xdargs+=("--env" "GNC_DATA_HOME=${clocalsharedir}")
 xdargs+=("--pull=missing")
 
 # Arguments for the application
